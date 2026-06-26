@@ -33,17 +33,13 @@ function getCharacter(characterId) {
 }
 
 function buildGeminiRequest(character, messages) {
-  const truncated = messages.slice(-MAX_HISTORY);
-
-  const contents = truncated.map((msg) => ({
+  // Format compatible with gemini-1.5-flash - no systemInstruction
+  const contents = messages.slice(-MAX_HISTORY).map((msg) => ({
     role: msg.role === "user" ? "user" : "model",
     parts: [{ text: msg.text }],
   }));
 
   return {
-    systemInstruction: {
-      parts: [{ text: character.systemPrompt }],
-    },
     contents,
     generationConfig: {
       maxOutputTokens: 256,
@@ -84,8 +80,13 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: "Server configuration error" });
     }
 
-    const body = buildGeminiRequest(character, messages);
-    // Try gemini-1.5-flash first (most common), then fallback
+    // Embed system prompt in first message for context
+    const messagesWithContext = [
+      { text: `Instructions: ${character.systemPrompt}`, role: "user" },
+      ...messages
+    ];
+    const body = buildGeminiRequest(character, messagesWithContext);
+    
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
     const response = await fetch(url, {
@@ -97,25 +98,7 @@ export default async function handler(req, res) {
     if (!response.ok) {
       const errorText = await response.text();
       console.error("[api/chat] Gemini API error:", response.status, errorText);
-      
-      // Try with gemini-pro as fallback
-      const fallbackUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
-      const fallbackResponse = await fetch(fallbackUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      
-      if (!fallbackResponse.ok) {
-        const fallbackError = await fallbackResponse.text();
-        console.error("[api/chat] Fallback Gemini API error:", fallbackResponse.status, fallbackError);
-        return res.status(502).json({ error: "AI service error" });
-      }
-      
-      const fallbackData = await fallbackResponse.json();
-      const fallbackText = fallbackData?.candidates?.[0]?.content?.parts?.[0]?.text ||
-        "Lo siento, no pude generar una respuesta.";
-      return res.status(200).json({ text: fallbackText.trim() });
+      return res.status(502).json({ error: "AI service error", details: errorText });
     }
 
     const data = await response.json();
