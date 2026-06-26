@@ -33,7 +33,7 @@ function getCharacter(characterId) {
 }
 
 function buildGeminiRequest(character, messages) {
-  // Format compatible with gemini-1.5-flash - no systemInstruction
+  // Format compatible with gemini-pro - no systemInstruction
   const contents = messages.slice(-MAX_HISTORY).map((msg) => ({
     role: msg.role === "user" ? "user" : "model",
     parts: [{ text: msg.text }],
@@ -87,7 +87,7 @@ export default async function handler(req, res) {
     ];
     const body = buildGeminiRequest(character, messagesWithContext);
     
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
 
     const response = await fetch(url, {
       method: "POST",
