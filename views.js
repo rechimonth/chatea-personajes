@@ -1,0 +1,423 @@
+import { CHARACTERS } from "./characters.js";
+import { store } from "./store.js";
+
+const listeners = new Set();
+
+function escapeHTML(str = "") {
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function getApp() {
+  const el = document.getElementById("app-main");
+  if (!el) throw new Error("#app-main not found");
+  return el;
+}
+
+function tagsHTML(tags = []) {
+  return tags.map(tag => `<span class="tag">${escapeHTML(tag)}</span>`).join("");
+}
+
+function cardHTML(character) {
+  const gradient = `linear-gradient(135deg, ${character.primaryColor}, ${character.secondaryColor})`;
+
+  return `
+    <article class="character-card" style="--primary: ${character.primaryColor}; --secondary: ${character.secondaryColor}">
+      <div class="card-avatar" style="background: ${gradient}">
+        <img src="${character.avatar}" alt="${escapeHTML(character.name)}" loading="lazy" />
+      </div>
+      <div class="card-body">
+        <div class="card-title-row">
+          <h2>${escapeHTML(character.name)}</h2>
+          <span class="card-tier">${escapeHTML(character.tier)}</span>
+        </div>
+        <span class="card-category">${escapeHTML(character.category)}</span>
+        <p class="card-description">${escapeHTML(character.description)}</p>
+        <div class="card-tags">
+          ${tagsHTML(character.tags)}
+        </div>
+      </div>
+      <div class="card-footer">
+        <button class="btn-chat" data-id="${character.id}" aria-label="Chatear con ${escapeHTML(character.name)}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          </svg>
+          Chatear
+        </button>
+      </div>
+    </article>
+  `;
+}
+
+export function renderHome() {
+  const app = getApp();
+  app.innerHTML = `
+    <div class="banner-container">
+      <div class="slider" style="--quantity: ${CHARACTERS.length};">
+        ${CHARACTERS.map((char, index) => {
+          const gradient = `linear-gradient(135deg, ${char.primaryColor}, ${char.secondaryColor})`;
+          return `
+            <div class="item" style="--position: ${index + 1}; --primary: ${char.primaryColor};">
+              <div class="card-3d">
+                <div class="card-avatar-3d" style="background: ${gradient}">
+                  <img src="${char.avatar}" alt="${escapeHTML(char.name)}" loading="lazy" />
+                </div>
+                <h3 class="card-name">${escapeHTML(char.name)}</h3>
+                <span class="card-category">${escapeHTML(char.category)}</span>
+                <button class="btn-chat" data-id="${char.id}" aria-label="Chatear con ${escapeHTML(char.name)}">
+                  Chatear
+                </button>
+              </div>
+            </div>
+          `;
+        }).join("")}
+      </div>
+    </div>
+  `;
+
+  const container = app.querySelector(".banner-container");
+  if (container) {
+    container.addEventListener("click", (e) => {
+      const button = e.target.closest(".btn-chat");
+      if (!button) return;
+      const id = button.dataset.id;
+      if (id) {
+        e.stopPropagation();
+        if (typeof navigate === "function") {
+          navigate(`/chat?id=${id}`);
+        } else {
+          window.history.pushState({}, "", `/chat?id=${id}`);
+          window.dispatchEvent(new PopStateEvent("popstate"));
+        }
+      }
+    });
+  }
+}
+
+function scrollToBottom(element) {
+  if (!element) return;
+  requestAnimationFrame(() => {
+    element.scrollTop = element.scrollHeight;
+  });
+}
+
+function renderMessageBubble(message, character, isUser = false) {
+  const time = new Date(message.timestamp).toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  const avatarHTML = isUser
+    ? `<div class="bubble-avatar bubble-avatar-user">Tú</div>`
+    : `<div class="bubble-avatar" style="background: linear-gradient(135deg, ${character.primaryColor}, ${character.secondaryColor})">
+        <img src="${character.avatar}" alt="${escapeHTML(character.name)}" />
+       </div>`;
+
+  const nameHTML = isUser
+    ? `<span class="bubble-name">Tú</span>`
+    : `<span class="bubble-name" style="color: ${character.primaryColor}">${escapeHTML(character.name)}</span>`;
+
+  const copyButton = !isUser
+    ? `<button class="copy-btn" data-text="${escapeHTML(message.text)}" title="Copiar respuesta" aria-label="Copiar respuesta">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+       </button>`
+    : "";
+
+  return `
+    <div class="chat-bubble ${isUser ? "chat-bubble-user" : "chat-bubble-character"}" role="region" aria-label="${isUser ? "Tu mensaje" : escapeHTML(character.name)}">
+      ${avatarHTML}
+      <div class="bubble-content">
+        <div class="bubble-header">
+          ${nameHTML}
+          <span class="bubble-time">${time}</span>
+        </div>
+        <p class="bubble-text">${escapeHTML(message.text)}</p>
+        <div class="bubble-actions">
+          ${copyButton}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderTypingIndicator(character) {
+  return `
+    <div class="chat-bubble chat-bubble-character typing-indicator" id="typing-indicator" role="status" aria-label="${escapeHTML(character.name)} está escribiendo...">
+      <div class="bubble-avatar" style="background: linear-gradient(135deg, ${character.primaryColor}, ${character.secondaryColor})">
+        <img src="${character.avatar}" alt="${escapeHTML(character.name)}" />
+      </div>
+      <div class="bubble-content">
+        <span class="bubble-name" style="color: ${character.primaryColor}">${escapeHTML(character.name)}</span>
+        <div class="typing-dots">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderChat(characterId) {
+  const character = CHARACTERS.find((c) => c.id === characterId);
+  if (!character) return;
+
+  const gradient = `linear-gradient(135deg, ${character.primaryColor}, ${character.secondaryColor})`;
+
+  const history = store.getState().messages || [];
+  const welcomeMessage = {
+    role: "character",
+    text: character.greeting,
+    timestamp: Date.now(),
+  };
+
+  let messagesHTML = "";
+
+  if (history.length === 0) {
+    messagesHTML = renderMessageBubble(welcomeMessage, character, false);
+  } else {
+    const allMessages = [welcomeMessage, ...history];
+    messagesHTML = allMessages
+      .map((msg) => renderMessageBubble(msg, character, msg.role === "user"))
+      .join("");
+  }
+
+getApp().innerHTML = `
+    <div class="chat-view">
+      <div class="chat-view-header">
+        <a href="/" class="back-link" data-link>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+          Volver
+        </a>
+        <button class="clear-history-btn" id="clear-history-btn" aria-label="Borrar historial">
+          Borrar historial
+        </button>
+      </div>
+
+      <div class="chat-header">
+        <div class="chat-avatar" style="background: ${gradient}">
+          <img src="${character.avatar}" alt="${escapeHTML(character.name)}" />
+        </div>
+        <div class="chat-header-info">
+          <h1 class="chat-character-name">${escapeHTML(character.name)}</h1>
+          <span class="chat-character-meta">${escapeHTML(character.category)} · ${escapeHTML(character.tier)}</span>
+        </div>
+      </div>
+
+      <div class="chat-description">
+        <p>${escapeHTML(character.description)}</p>
+      </div>
+
+      <div class="chat-messages" id="chat-messages">
+        ${messagesHTML}
+        <div id="messages-container"></div>
+      </div>
+
+      <form id="chat-form" class="chat-form" autocomplete="off">
+        <div class="chat-input-wrapper">
+          <input
+            type="text"
+            id="chat-input"
+            placeholder="Escribe un mensaje..."
+            class="chat-input"
+          />
+          <button type="submit" class="chat-send-btn" style="background: ${gradient}" aria-label="Enviar mensaje">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" x2="11" y1="2" y1="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+      </form>
+    </div>
+  `;
+
+  const messagesContainer = document.getElementById("messages-container");
+  const chatMessages = document.getElementById("chat-messages");
+  const chatForm = document.getElementById("chat-form");
+  const chatInput = document.getElementById("chat-input");
+
+  if (chatMessages && history.length > 0) {
+    messagesContainer.innerHTML = history
+      .map((msg) => renderMessageBubble(msg, character, msg.role === "user"))
+      .join("");
+    scrollToBottom(chatMessages);
+  }
+
+  if (!chatForm) return;
+
+  chatForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const text = chatInput.value.trim();
+    if (!text) return;
+
+    chatInput.value = "";
+    chatInput.disabled = true;
+
+    const userMessage = {
+      role: "user",
+      text,
+      timestamp: Date.now(),
+    };
+
+    const updatedMessages = [...(store.getState().messages || []), userMessage];
+
+    store.setState({
+      characterId,
+      messages: updatedMessages,
+      route: "/chat",
+    });
+
+    if (messagesContainer) {
+      messagesContainer.insertAdjacentHTML(
+        "beforeend",
+        renderMessageBubble(userMessage, character, true)
+      );
+    }
+    scrollToBottom(chatMessages);
+
+    const typingHtml = renderTypingIndicator(character);
+    if (messagesContainer) {
+      messagesContainer.insertAdjacentHTML("beforeend", typingHtml);
+    }
+    const typingIndicator = document.getElementById("typing-indicator");
+    scrollToBottom(chatMessages);
+
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messages: updatedMessages,
+          character,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (typingIndicator) {
+        typingIndicator.remove();
+      }
+
+      const botMessage = {
+        role: "character",
+        text: data.text || "Lo siento, no pude procesar tu solicitud.",
+        timestamp: Date.now(),
+      };
+
+      const finalMessages = [...updatedMessages, botMessage];
+
+      store.setState({
+        characterId,
+        messages: finalMessages,
+        route: "/chat",
+      });
+
+      if (messagesContainer) {
+        messagesContainer.insertAdjacentHTML(
+          "beforeend",
+          renderMessageBubble(botMessage, character, false)
+        );
+      }
+      scrollToBottom(chatMessages);
+    } catch (error) {
+      console.error("[renderChat] Error calling /api/chat:", error);
+
+      if (typingIndicator) {
+        typingIndicator.remove();
+      }
+
+      const errorMessage = {
+        role: "character",
+        text: "Lo siento, hubo un error de conexión. Por favor, intenta de nuevo más tarde.",
+        timestamp: Date.now(),
+      };
+
+      const finalMessages = [...updatedMessages, errorMessage];
+
+      store.setState({
+        characterId,
+        messages: finalMessages,
+        route: "/chat",
+      });
+
+      if (messagesContainer) {
+        messagesContainer.insertAdjacentHTML(
+          "beforeend",
+          renderMessageBubble(errorMessage, character, false)
+        );
+      }
+      scrollToBottom(chatMessages);
+    } finally {
+      chatInput.disabled = false;
+      chatInput.focus();
+    }
+  });
+
+  if (chatInput) {
+    chatInput.focus();
+  }
+
+  if (chatMessages) {
+    chatMessages.addEventListener("click", (e) => {
+      const copyBtn = e.target.closest(".copy-btn");
+      if (copyBtn) {
+        const text = copyBtn.getAttribute("data-text");
+        if (text) {
+          navigator.clipboard.writeText(text);
+          copyBtn.classList.add("copied");
+          setTimeout(() => copyBtn.classList.remove("copied"), 1500);
+        }
+        return;
+      }
+    });
+  }
+
+  const clearHistoryBtn = document.getElementById("clear-history-btn");
+  if (clearHistoryBtn) {
+    clearHistoryBtn.addEventListener("click", () => {
+      if (confirm("¿Borrar todo el historial de conversación?")) {
+        store.clearHistory(characterId);
+        renderChat(characterId);
+      }
+    });
+  }
+}
+
+export { renderChat, renderAbout };
+
+function renderAbout() {
+  const app = getApp();
+  app.innerHTML = `
+    <div class="about-view">
+      <a href="/" class="back-link" data-link>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        Volver
+      </a>
+      <div class="about-content">
+        <h1>Acerca del Proyecto</h1>
+        <p class="about-description">
+          ChateaIA es una Single Page Application que permite conversar con personajes icónicos 
+          usando inteligencia artificial de Google Gemini. El proyecto demuestra integración segura 
+          de APIs con Vercel Serverless Functions.
+        </p>
+        <div class="tech-stack">
+          <h2>Tecnologías</h2>
+          <ul>
+            <li>Vanilla JavaScript (ES Modules)</li>
+            <li>Vite como bundler</li>
+            <li>Vercel Serverless Functions</li>
+            <li>CSS Variables &amp; Grid/Flexbox</li>
+            <li>Vitest para testing</li>
+          </ul>
+        </div>
+        <div class="characters-info">
+          <h2>Personajes disponibles</h2>
+          <p>Sherlock Holmes • Drácula • Alicia • La Criatura de Frankenstein</p>
+        </div>
+      </div>
+    </div>
+  `;
+}
