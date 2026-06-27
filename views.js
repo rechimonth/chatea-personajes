@@ -285,10 +285,10 @@ getApp().innerHTML = `
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          messages: updatedMessages,
-          character,
-        }),
+body: JSON.stringify({
+           messages: updatedMessages,
+           characterId,
+         }),
       });
 
       if (!response.ok) {
