@@ -4,6 +4,7 @@ import { initTheme, toggleTheme, getTheme } from "./theme.js";
 
 const appMain = document.getElementById("app-main");
 const themeToggle = document.getElementById("theme-toggle");
+const searchInput = document.querySelector(".search-input");
 
 initTheme();
 
@@ -22,6 +23,20 @@ if (themeToggle) {
   themeToggle.addEventListener("click", () => {
     const newTheme = toggleTheme();
     store.setState({ theme: newTheme });
+  });
+}
+
+if (searchInput) {
+  searchInput.addEventListener("input", (e) => {
+    const query = e.target.value.toLowerCase();
+    const cards = document.querySelectorAll(".card-3d");
+    cards.forEach((card) => {
+      const name = card.querySelector(".card-name")?.textContent.toLowerCase() || "";
+      const category = card.querySelector(".card-category-label")?.textContent.toLowerCase() || "";
+      const match = name.includes(query) || category.includes(query);
+      card.closest(".item").style.opacity = match ? "1" : "0.4";
+      card.closest(".item").style.filter = match ? "brightness(1)" : "brightness(0.5)";
+    });
   });
 }
 

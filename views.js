@@ -52,26 +52,42 @@ function cardHTML(character) {
 
 export function renderHome() {
   const app = getApp();
+  const currentActive = 0;
+  
   app.innerHTML = `
     <div class="banner-container">
       <div class="slider" style="--quantity: ${CHARACTERS.length};">
         ${CHARACTERS.map((char, index) => {
-          const gradient = `linear-gradient(135deg, ${char.primaryColor}, ${char.secondaryColor})`;
+          const isActive = index === currentActive;
           return `
-            <div class="item" style="--position: ${index + 1}; --primary: ${char.primaryColor};">
-              <div class="card-3d">
-                <div class="card-avatar-3d" style="background: ${gradient}">
-                  <img src="${char.avatar}" alt="${escapeHTML(char.name)}" loading="lazy" />
+            <div class="item" style="--position: ${index + 1}; --primary: ${char.primaryColor}; --secondary: ${char.secondaryColor};">
+              <div class="card-3d ${isActive ? 'active' : ''}">
+                <img src="${char.avatar}" alt="${escapeHTML(char.name)}" class="card-image" loading="lazy" />
+                <div class="card-ornament ${isActive ? 'active' : ''}"></div>
+                <div class="card-overlay">
+                  <div class="card-overlay-content">
+                    <h3 class="card-name">${escapeHTML(char.name)}</h3>
+                    <span class="card-category-label">${escapeHTML(char.category)}</span>
+                    <button class="btn-chat-3d" data-id="${char.id}" aria-label="Chatear con ${escapeHTML(char.name)}">CHATEAR</button>
+                  </div>
                 </div>
-                <h3 class="card-name">${escapeHTML(char.name)}</h3>
-                <span class="card-category">${escapeHTML(char.category)}</span>
-                <button class="btn-chat" data-id="${char.id}" aria-label="Chatear con ${escapeHTML(char.name)}">
-                  Chatear
-                </button>
               </div>
             </div>
           `;
         }).join("")}
+      </div>
+      <button class="carousel-nav prev" id="carousel-prev" aria-label="Anterior">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 18-6-6 6-6"/>
+        </svg>
+      </button>
+      <button class="carousel-nav next" id="carousel-next" aria-label="Siguiente">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 18l6-6-6-6"/>
+        </svg>
+      </button>
+      <div class="pagination" id="pagination">
+        ${CHARACTERS.map((_, i) => `<div class="pagination-dot ${i === 0 ? 'active' : ''}" data-index="${i}"></div>`).join("")}
       </div>
     </div>
   `;
@@ -79,7 +95,7 @@ export function renderHome() {
   const container = app.querySelector(".banner-container");
   if (container) {
     container.addEventListener("click", (e) => {
-      const button = e.target.closest(".btn-chat");
+      const button = e.target.closest(".btn-chat-3d");
       if (!button) return;
       const id = button.dataset.id;
       if (id) {
@@ -93,6 +109,49 @@ export function renderHome() {
       }
     });
   }
+
+  const prevBtn = document.getElementById("carousel-prev");
+  const nextBtn = document.getElementById("carousel-next");
+  const dots = document.querySelectorAll(".pagination-dot");
+  let activeIndex = 0;
+
+  function updateCarousel() {
+    const items = document.querySelectorAll(".item");
+    items.forEach((item, i) => {
+      const card = item.querySelector(".card-3d");
+      if (i === activeIndex) {
+        card.classList.add("active");
+        item.style.transform = "rotateY(0deg) translateZ(400px) scale(1.02)";
+        item.style.pointerEvents = "auto";
+      } else {
+        card.classList.remove("active");
+      }
+    });
+    dots.forEach((dot, i) => {
+      dot.classList.toggle("active", i === activeIndex);
+    });
+  }
+
+  if (prevBtn) {
+    prevBtn.addEventListener("click", () => {
+      activeIndex = (activeIndex - 1 + CHARACTERS.length) % CHARACTERS.length;
+      updateCarousel();
+    });
+  }
+
+  if (nextBtn) {
+    nextBtn.addEventListener("click", () => {
+      activeIndex = (activeIndex + 1) % CHARACTERS.length;
+      updateCarousel();
+    });
+  }
+
+  dots.forEach((dot) => {
+    dot.addEventListener("click", () => {
+      activeIndex = parseInt(dot.dataset.index);
+      updateCarousel();
+    });
+  });
 }
 
 function scrollToBottom(element) {
