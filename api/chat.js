@@ -43,7 +43,7 @@ function buildGeminiRequest(character, messages) {
     contents,
     generationConfig: {
       maxOutputTokens: 256,
-      temperature: 0.9,
+      temperature: 0.7,
     },
   };
 }
