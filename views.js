@@ -52,39 +52,29 @@ function cardHTML(character) {
 
 export function renderHome() {
   const app = getApp();
-  const currentActive = 0;
   
   app.innerHTML = `
     <div class="banner-container">
-      <div class="slider" style="--quantity: ${CHARACTERS.length};">
-        ${CHARACTERS.map((char, index) => {
-          const isActive = index === currentActive;
-          return `
-            <div class="item" style="--position: ${index + 1}; --primary: ${char.primaryColor}; --secondary: ${char.secondaryColor};">
-              <div class="card-3d ${isActive ? 'active' : ''}">
-                <img src="${char.avatar}" alt="${escapeHTML(char.name)}" class="card-image" loading="lazy" />
-                <div class="card-ornament ${isActive ? 'active' : ''}"></div>
-                <div class="card-overlay">
-                  <div class="card-overlay-content">
-                    <h3 class="card-name">${escapeHTML(char.name)}</h3>
-                    <span class="card-category-label">${escapeHTML(char.category)}</span>
-                    <button class="btn-chat-3d" data-id="${char.id}" aria-label="Chatear con ${escapeHTML(char.name)}">CHATEAR</button>
-                  </div>
+      <div class="slider">
+        <div class="carousel-track" id="carousel-track">
+          ${CHARACTERS.map((char, index) => `
+            <div class="card-3d" data-id="${char.id}">
+              <img src="${char.avatar}" alt="${escapeHTML(char.name)}" class="card-image" loading="lazy" />
+              <div class="card-overlay">
+                <div class="card-overlay-content">
+                  <h3 class="card-name">${escapeHTML(char.name)}</h3>
+                  <button class="btn-chat-3d" data-id="${char.id}" aria-label="Chatear con ${escapeHTML(char.name)}">CHATEAR</button>
                 </div>
               </div>
             </div>
-          `;
-        }).join("")}
+          `).join("")}
+        </div>
       </div>
       <button class="carousel-nav prev" id="carousel-prev" aria-label="Anterior">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M15 18-6-6 6-6"/>
-        </svg>
+        &larr;
       </button>
       <button class="carousel-nav next" id="carousel-next" aria-label="Siguiente">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M9 18l6-6-6-6"/>
-        </svg>
+        &rarr;
       </button>
       <div class="pagination" id="pagination">
         ${CHARACTERS.map((_, i) => `<div class="pagination-dot ${i === 0 ? 'active' : ''}" data-index="${i}"></div>`).join("")}
@@ -92,40 +82,17 @@ export function renderHome() {
     </div>
   `;
 
-  const container = app.querySelector(".banner-container");
-  if (container) {
-    container.addEventListener("click", (e) => {
-      const button = e.target.closest(".btn-chat-3d");
-      if (!button) return;
-      const id = button.dataset.id;
-      if (id) {
-        e.stopPropagation();
-        if (typeof navigate === "function") {
-          navigate(`/chat?id=${id}`);
-        } else {
-          window.history.pushState({}, "", `/chat?id=${id}`);
-          window.dispatchEvent(new PopStateEvent("popstate"));
-        }
-      }
-    });
-  }
-
+  const track = document.getElementById("carousel-track");
+  const cards = document.querySelectorAll(".card-3d");
+  const dots = document.querySelectorAll(".pagination-dot");
   const prevBtn = document.getElementById("carousel-prev");
   const nextBtn = document.getElementById("carousel-next");
-  const dots = document.querySelectorAll(".pagination-dot");
+  
   let activeIndex = 0;
 
   function updateCarousel() {
-    const items = document.querySelectorAll(".item");
-    items.forEach((item, i) => {
-      const card = item.querySelector(".card-3d");
-      if (i === activeIndex) {
-        card.classList.add("active");
-        item.style.transform = "rotateY(0deg) translateZ(400px) scale(1.02)";
-        item.style.pointerEvents = "auto";
-      } else {
-        card.classList.remove("active");
-      }
+    cards.forEach((card, i) => {
+      card.classList.toggle("active", i === activeIndex);
     });
     dots.forEach((dot, i) => {
       dot.classList.toggle("active", i === activeIndex);
@@ -150,6 +117,16 @@ export function renderHome() {
     dot.addEventListener("click", () => {
       activeIndex = parseInt(dot.dataset.index);
       updateCarousel();
+    });
+  });
+
+  document.querySelectorAll(".btn-chat-3d").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      const id = e.target.dataset.id;
+      if (id) {
+        window.history.pushState({}, "", `/chat?id=${id}`);
+        window.dispatchEvent(new PopStateEvent("popstate"));
+      }
     });
   });
 }
@@ -244,7 +221,7 @@ getApp().innerHTML = `
     <div class="chat-view">
       <div class="chat-view-header">
         <a href="/" class="back-link" data-link>
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+          <span class="back-icon">&lt;</span>
           Volver
         </a>
         <button class="clear-history-btn" id="clear-history-btn" aria-label="Borrar historial">
@@ -452,7 +429,7 @@ function renderAbout() {
   app.innerHTML = `
     <div class="about-view">
       <a href="/" class="back-link" data-link>
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        <span class="back-icon">&lt;</span>
         Volver
       </a>
       <div class="about-content">

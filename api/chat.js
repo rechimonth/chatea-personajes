@@ -1,3 +1,5 @@
+﻿import { GoogleGenAI } from "@google/genai";
+
 const CHARACTERS = [
   {
     id: "sherlock-holmes",
@@ -32,20 +34,24 @@ function getCharacter(characterId) {
   return CHARACTERS.find((c) => c.id === characterId) || null;
 }
 
-function buildGeminiRequest(character, messages) {
-  // Format compatible with gemini-pro - no systemInstruction
-  const contents = messages.slice(-MAX_HISTORY).map((msg) => ({
-    role: msg.role === "user" ? "user" : "model",
-    parts: [{ text: msg.text }],
-  }));
-
-  return {
-    contents,
-    generationConfig: {
-      maxOutputTokens: 256,
-      temperature: 0.7,
-    },
-  };
+function buildContents(messages, systemPrompt) {
+  const contents = [];
+  
+  // Add system instruction
+  contents.push({
+    role: "user",
+    parts: [{ text: systemPrompt }]
+  });
+  
+  // Add message history (last user + recent history)
+  messages.slice(-MAX_HISTORY).forEach((msg) => {
+    contents.push({
+      role: msg.role === "user" ? "user" : "model",
+      parts: [{ text: msg.text }]
+    });
+  });
+  
+  return contents;
 }
 
 export default async function handler(req, res) {
@@ -80,30 +86,20 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: "Server configuration error" });
     }
 
-    // Embed system prompt in first message for context
-    const messagesWithContext = [
-      { text: `Instructions: ${character.systemPrompt}`, role: "user" },
-      ...messages
-    ];
-    const body = buildGeminiRequest(character, messagesWithContext);
+    const ai = new GoogleGenAI({ apiKey });
     
-    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+    const contents = buildContents(messages, `Instructions: ${character.systemPrompt}`);
 
-    const response = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents,
+      config: {
+        temperature: 0.7,
+        maxOutputTokens: 256,
+      },
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("[api/chat] Gemini API error:", response.status, errorText);
-      return res.status(502).json({ error: "AI service error", details: errorText });
-    }
-
-    const data = await response.json();
-    const text =
-      data?.candidates?.[0]?.content?.parts?.[0]?.text ||
+    const text = response.candidates?.[0]?.content?.parts?.[0]?.text ||
       "Lo siento, no pude generar una respuesta.";
 
     return res.status(200).json({ text: text.trim() });
