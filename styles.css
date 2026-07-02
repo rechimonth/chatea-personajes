@@ -659,3 +659,88 @@ body::before {
     transform: translateY(0);
   }
 }
+/* ==========================================================================
+   CONSOLIDADOR RESPONSIVO (OPTIMIZACIÓN MÓVIL)
+   ========================================================================== */
+@media (max-width: 768px) {
+  
+  /* 1. Solución al Solapamiento del Navbar */
+  .navbar {
+    flex-direction: column; /* Cambia de horizontal a vertical */
+    gap: 16px;
+    padding: 16px 12px;
+    position: relative; /* Evita comportamientos extraños de sticky en flujos móviles cortos */
+  }
+
+  .nav-center {
+    width: 100%;
+    order: 1; /* El título se mantiene arriba */
+  }
+
+  .nav-brand {
+    font-size: 1.25rem; /* Reducimos un poco el tamaño para pantallas angostas */
+  }
+
+  .nav-subtitle {
+    font-size: 0.7rem;
+    padding: 0 8px;
+  }
+
+  .nav-actions {
+    width: 100%;
+    justify-content: center; /* Centra el buscador y el botón de tema */
+    order: 2; /* Pasa abajo del título ordenadamente */
+    gap: 8px;
+  }
+
+  .search-input {
+    width: 140px; /* Ancho inicial más prudente en móvil */
+  }
+  
+  .search-input:focus {
+    width: 180px; /* Expansión controlada para que no empuje el botón de modo claro/oscuro fuera de la pantalla */
+  }
+
+  /* 2. Solución a Botones que no Funcionan (Capas Fantasma) */
+  /* Forzamos que los contenedores globales no bloqueen los clics en móviles */
+  .carousel-container, 
+  .cards-stage { 
+    pointer-events: none; 
+  }
+
+  /* Reactivamos los clics únicamente en los elementos que los necesitan */
+  .character-card,
+  .nav-btn,
+  .arrow-btn,
+  .indicator-dots,
+  .search-input,
+  .theme-toggle {
+    pointer-events: auto;
+  }
+
+  /* 3. Ajuste del Carrusel 3D (Hacer visibles y seleccionables las cartas) */
+  /* Reducimos la traslación horizontal (X) para que las cartas laterales no se salgan de la pantalla */
+  .card-left {
+    transform: translateX(-45px) translateZ(-120px) rotateY(30deg) scale(0.7) !important;
+    opacity: 0.4; /* Mayor contraste para que se note cuál es la activa */
+  }
+
+  .card-right {
+    transform: translateX(45px) translateZ(-120px) rotateY(-30deg) scale(0.7) !important;
+    opacity: 0.4;
+  }
+
+  .card-active {
+    transform: translateX(0) translateZ(0) scale(1) !important;
+    z-index: 10 !important;
+    opacity: 1;
+  }
+
+  /* 4. Optimización de Controles en Pantallas Táctiles */
+  /* Ampliamos el área de toque de las flechas de navegación para que sea fácil pulsar con el pulgar */
+  .arrow-btn, .nav-btn {
+    width: 44px;
+    height: 44px;
+    z-index: 50 !important; /* Asegura que se posicionen por encima de las cartas laterales */
+  }
+}
