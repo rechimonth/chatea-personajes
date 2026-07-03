@@ -1,10 +1,15 @@
 # Chatea con tu personaje favorito
 
-Single Page Application con chat de personajes usando Google Gemini.
+Single Page Application desarrollada para **ComicSansCon**, agencia digital especializada en experiencias interactivas para fans de videojuegos, películas y series de televisión.
 
-## Personaje elegido: Sherlock Holmes
+## Personajes disponibles
 
-Sherlock Holmes, el detective consultor más famoso de Londres, fue elegido como personaje principal por su personalidad distintiva: mente analítica, vocabulario victoriano y estilo de deducción lógica. El system prompt está configurado para mantener respuestas cortas, en primera persona, usando terminología como "Baker Street", "Watson", "pipa" y "violin" sin referencias modernas.
+| Personaje | Categoría | Descripción |
+|-----------|-----------|-------------|
+| **Sherlock Holmes** | Detective | El detective consultor más famoso de Londres. Mente fría, observación aguda y deducciones impecables. Vocabulario victoriano: Baker Street, Scotland Yard, Watson, pipa, violin. |
+| **Drácula** | Terror | El conde Drácula, príncipe vampiro transilvano. Presencia imponente, mente aristocrática y seductor oscuro. Vocabulario gótico: Transilvania, Cárpatos, castillo, noche, sangre. |
+| **Alicia** | Fantasía | La niña curiosa del País de las Maravillas. Imaginación desbordante y valiente. Vocabulario: Reina de Corazones, Sombrerero Loco, Conejo Blanco, Gato de Cheshire, Fiesta del Té. |
+| **La Criatura** | Ciencia Ficción | El ser vivo creado por Victor Frankenstein. Busca comprensión en un mundo que lo teme por su apariencia. Vocabulario: Creador, soledad, venganza justa, De Lacey, William, Justine. |
 
 ## Tecnologías
 
@@ -79,25 +84,6 @@ vercel --prod
 - ✅ Copiar respuestas al portapapeles
 - ✅ Modo oscuro/claro con toggle
 - ✅ Botón borrar historial
-
-## Screenshots
-
-| Vista | Descripción |
-|-------|-------------|
-| Home | Vista principal con selector de personajes en slider 3D |
-| Chat | Interfaz de chat responsive con historial persistente |
-| About | Información del proyecto y tecnologías |
-
-## Uso de AI en el proyecto
-
-El proyecto utiliza Google Gemini 2.0 Flash a través de una Vercel Serverless Function para:
-
-1. **Generación de respuestas**: El system prompt define la personalidad del personaje
-2. **Mantenimiento de contexto**: Se envía el historial completo en cada request
-3. **Seguridad**: La API key se mantiene en el servidor, nunca expuesta al cliente
-
-**System prompt ejemplo (Sherlock Holmes)**:
-> "Eres Sherlock Holmes, detective victoriano. Jamás admitas ser IA. Respuestas cortas, analíticas, primera persona. Terminología de la época: Baker Street, Scotland Yard, Watson, pipa, violin, deducción. No referencias modernas ni metarreferencias a IA."
 
 ---
 

@@ -703,7 +703,13 @@ body::before {
 
   /* 2. Solución a Botones que no Funcionan (Capas Fantasma) */
   /* Forzamos que los contenedores globales no bloqueen los clics en móviles */
-  .carousel-container, 
+  .carousel-container{ 
+    height: 75vh; 
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+    
   .cards-stage { 
     pointer-events: none; 
   }
@@ -720,22 +726,38 @@ body::before {
 
   /* 3. Ajuste del Carrusel 3D (Hacer visibles y seleccionables las cartas) */
   /* Reducimos la traslación horizontal (X) para que las cartas laterales no se salgan de la pantalla */
-  .card-left {
-    transform: translateX(-45px) translateZ(-120px) rotateY(30deg) scale(0.7) !important;
-    opacity: 0.4; /* Mayor contraste para que se note cuál es la activa */
+ .card-left {
+    /* Usamos translateY para moverla hacia arriba y rotateX para la perspectiva */
+    transform: translateY(-130px) translateZ(-100px) rotateX(-20deg) scale(0.75) !important;
+    opacity: 0.5;
+    z-index: 1;
+  }
+.card-right {
+    /* Usamos translateY para moverla hacia abajo */
+    transform: translateY(130px) translateZ(-100px) rotateX(20deg) scale(0.75) !important;
+    opacity: 0.5;
+    z-index: 1;
   }
 
-  .card-right {
-    transform: translateX(45px) translateZ(-120px) rotateY(-30deg) scale(0.7) !important;
-    opacity: 0.4;
-  }
-
+  /* 4. Tarjeta Activa (Centro) */
   .card-active {
-    transform: translateX(0) translateZ(0) scale(1) !important;
+    transform: translateY(0) translateZ(0) scale(1) !important;
     z-index: 10 !important;
     opacity: 1;
   }
+.arrow-prev {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%) rotate(90deg); /* Gira la flecha hacia arriba */
+  }
 
+  .arrow-next {
+    position: absolute;
+    bottom: -20px;
+    left: 50%;
+    transform: translateX(-50%) rotate(90deg); /* Gira la flecha hacia abajo */
+  }
   /* 4. Optimización de Controles en Pantallas Táctiles */
   /* Ampliamos el área de toque de las flechas de navegación para que sea fácil pulsar con el pulgar */
   .arrow-btn, .nav-btn {
