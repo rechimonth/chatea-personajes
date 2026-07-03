@@ -660,6 +660,7 @@ body::before {
   }
 }
 /* ==========================================================================
+ /* ==========================================================================
    CONSOLIDADOR RESPONSIVO (OPTIMIZACIÓN MÓVIL)
    ========================================================================== */
 @media (max-width: 768px) {
@@ -701,68 +702,88 @@ body::before {
     width: 180px; /* Expansión controlada para que no empuje el botón de modo claro/oscuro fuera de la pantalla */
   }
 
-  /* 2. Solución a Botones que no Funcionan (Capas Fantasma) */
-  /* Forzamos que los contenedores globales no bloqueen los clics en móviles */
-  .carousel-container{ 
-    height: 75vh; 
+  /* 2. Solución a Botones que no Funcionan (Capas Fantasma) y Estructura Vertical */
+  .carousel-container { 
+    height: 75vh !important; 
     display: flex;
     flex-direction: column;
     justify-content: center;
+    align-items: center;
+    position: relative;
   }
     
   .cards-stage { 
     pointer-events: none; 
+    perspective: 1000px !important; /* Añade profundidad de campo en el eje vertical */
+    width: 100%;
+    height: 100%;
+    position: relative;
   }
 
   /* Reactivamos los clics únicamente en los elementos que los necesitan */
   .character-card,
   .nav-btn,
   .arrow-btn,
-  .indicator-dots,
   .search-input,
   .theme-toggle {
     pointer-events: auto;
   }
 
-  /* 3. Ajuste del Carrusel 3D (Hacer visibles y seleccionables las cartas) */
-  /* Reducimos la traslación horizontal (X) para que las cartas laterales no se salgan de la pantalla */
- .card-left {
-    /* Usamos translateY para moverla hacia arriba y rotateX para la perspectiva */
-    transform: translateY(-130px) translateZ(-100px) rotateX(-20deg) scale(0.75) !important;
-    opacity: 0.5;
-    z-index: 1;
-  }
-.card-right {
-    /* Usamos translateY para moverla hacia abajo */
-    transform: translateY(130px) translateZ(-100px) rotateX(20deg) scale(0.75) !important;
-    opacity: 0.5;
-    z-index: 1;
+  /* OBLIGATORIO: Forzamos a que todas las tarjetas compartan el mismo centro absoluto antes de trasladarse */
+  .character-card {
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    margin: 0 !important;
   }
 
-  /* 4. Tarjeta Activa (Centro) */
-  .card-active {
-    transform: translateY(0) translateZ(0) scale(1) !important;
-    z-index: 10 !important;
-    opacity: 1;
+  /* 3. Ajuste del Carrusel 3D Vertical (Posicionamiento y Perspectiva) */
+  .card-left {
+    /* Mantiene el centro horizontal (-50%) y desplaza verticalmente hacia ARRIBA */
+    transform: translate(-50%, calc(-50% - 145px)) translateZ(-110px) rotateX(15deg) scale(0.75) !important;
+    opacity: 0.4 !important;
+    z-index: 1 !important;
   }
-.arrow-prev {
-    position: absolute;
-    top: -20px;
-    left: 50%;
-    transform: translateX(-50%) rotate(90deg); /* Gira la flecha hacia arriba */
+
+  .card-right {
+    /* Mantiene el centro horizontal (-50%) y desplaza verticalmente hacia ABAJO */
+    transform: translate(-50%, calc(-50% + 145px)) translateZ(-110px) rotateX(-15deg) scale(0.75) !important;
+    opacity: 0.4 !important;
+    z-index: 1 !important;
+  }
+
+  /* Tarjeta Activa (Centro exacto de la pantalla del móvil) */
+  .card-active {
+    transform: translate(-50%, -50%) translateZ(0) scale(1) !important;
+    z-index: 10 !important;
+    opacity: 1 !important;
+  }
+
+  /* 4. Ajuste de Controles de Navegación Verticales */
+  .arrow-prev {
+    position: absolute !important;
+    top: -10px !important;
+    left: 50% !important;
+    transform: translateX(-50%) rotate(90deg) !important; /* Gira la flecha apuntando hacia arriba */
   }
 
   .arrow-next {
-    position: absolute;
-    bottom: -20px;
-    left: 50%;
-    transform: translateX(-50%) rotate(90deg); /* Gira la flecha hacia abajo */
+    position: absolute !important;
+    bottom: -10px !important;
+    left: 50% !important;
+    transform: translateX(-50%) rotate(90deg) !important; /* Gira la flecha apuntando hacia abajo */
   }
-  /* 4. Optimización de Controles en Pantallas Táctiles */
-  /* Ampliamos el área de toque de las flechas de navegación para que sea fácil pulsar con el pulgar */
+
+  /* Ampliamos el área de toque de las flechas para pantallas táctiles */
   .arrow-btn, .nav-btn {
     width: 44px;
     height: 44px;
-    z-index: 50 !important; /* Asegura que se posicionen por encima de las cartas laterales */
+    z-index: 50 !important; /* Asegura que queden siempre sobre las tarjetas secundarias */
+  }
+
+  /* Limpiamos espacio ocultando los dots inferiores en móvil */
+  .indicator-dots {
+    display: none !important;
+    pointer-events: none;
   }
 }
