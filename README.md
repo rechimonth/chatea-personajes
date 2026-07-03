@@ -27,7 +27,7 @@ Single Page Application desarrollada para **ComicSansCon**, agencia digital espe
 
 ```bash
 # 1. Clonar el repositorio
-git clone <url-del-repo>
+git clone <https://github.com/rechimonth/chatea-personajes>
 cd chatea-personajes
 
 # 2. Instalar dependencias
