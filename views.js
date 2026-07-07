@@ -120,6 +120,48 @@ export function renderHome() {
     });
   });
 
+  /* Search functionality */
+  const searchForm = document.querySelector('.search-form');
+  const searchInput = document.querySelector('.search-input');
+
+  if (searchForm && searchInput) {
+    searchForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const query = searchInput.value.trim().toLowerCase();
+      const cards = document.querySelectorAll('.card-3d');
+
+      if (!query) {
+        cards.forEach((card) => {
+          card.style.display = '';
+        });
+        return;
+      }
+
+      let visibleCount = 0;
+      cards.forEach((card, index) => {
+        const char = CHARACTERS[index];
+        if (!char) return;
+
+        const searchText = (char.name + ' ' + char.category + ' ' + char.description + ' ' + char.tags.join(' ')).toLowerCase();
+        const match = searchText.includes(query);
+
+        card.style.display = match ? '' : 'none';
+        if (match) visibleCount++;
+      });
+
+      const existing = document.querySelector('.no-results');
+      if (existing) existing.remove();
+
+      if (visibleCount === 0) {
+        const noResults = document.createElement('div');
+        noResults.className = 'no-results';
+        noResults.textContent = 'No se encontraron personajes.';
+        const track = document.getElementById('carousel-track');
+        if (track) track.insertAdjacentElement('afterend', noResults);
+      }
+    });
+  }
+
   document.querySelectorAll(".btn-chat-3d").forEach((btn) => {
     btn.addEventListener("click", (e) => {
       const id = e.target.dataset.id;
