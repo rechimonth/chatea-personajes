@@ -1,4 +1,6 @@
 # Chatea con tu personaje favorito
+<img width="1536" height="1024" alt="ChatGPT Image 7 jul 2026, 12_27_26 p m" src="https://github.com/user-attachments/assets/bcff4bfd-af02-45dd-ad6a-f54dd312d6d3" />
+
 
 Single Page Application desarrollada para **ComicSansCon**, agencia digital especializada en experiencias interactivas para fans de videojuegos, películas y series de televisión.
 
