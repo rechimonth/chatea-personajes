@@ -91,7 +91,7 @@ export default async function handler(req, res) {
     const contents = buildContents(messages, `Instructions: ${character.systemPrompt}`);
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-3.1-flash-lite",
       contents,
       config: {
         temperature: 0.7,
