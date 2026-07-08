@@ -25,6 +25,8 @@ Single Page Application desarrollada para **ComicSansCon**, agencia digital espe
 
 ## Configuración y ejecución local
 
+El chat requiere el backend serverless de Vercel para funcionar, así que la forma recomendada de probar la aplicación localmente es:
+
 ```bash
 # 1. Clonar el repositorio
 git clone <https://github.com/rechimonth/chatea-personajes>
@@ -37,10 +39,20 @@ npm install
 cp .env.example .env
 # Editar .env y agregar tu GEMINI_API_KEY
 
-# 4. Ejecutar en desarrollo
-npm run dev
-# Abrir http://localhost:5173
+# 4. Ejecutar la app con Vercel para servir /api/chat
+npx vercel dev
+# Abrir http://localhost:3000
 ```
+
+Si solo ejecutas `npm run dev`, verás la SPA pero el chat no podrá llegar al endpoint `/api/chat` porque Vite no está sirviendo la función serverless.
+
+### Alternativa rápida
+
+```bash
+npm run dev
+```
+
+Úsala solo para revisar vistas estáticas; para probar la conversación con IA necesitas `vercel dev`.
 
 ## Ejecutar tests
 

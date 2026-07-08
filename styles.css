@@ -62,9 +62,11 @@ body::before {
 /* NAVBAR - Mystical Header */
 .navbar {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 24px;
+  gap: 16px;
+  padding: 16px;
   background: var(--bg-secondary);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border-color);
@@ -72,7 +74,7 @@ body::before {
   top: 0;
   z-index: 100;
   animation: grimFadeIn 0.6s ease-out both;
-  max-width: 40%;
+  max-width: 100%;
   margin: 0 auto;
 }
 
@@ -509,92 +511,219 @@ body::before {
   transform: scale(1.2);
 }
 
-/* Responsive - Mobile Vertical Layout */
-@media (max-width: 768px) {
-  /* Navbar adjustments for mobile */
+/* Responsive - Mobile First */
+.nav-center {
+  width: 100%;
+}
+
+.nav-brand {
+  font-size: 1.25rem;
+}
+
+.nav-subtitle {
+  font-size: 0.7rem;
+  padding: 0 8px;
+}
+
+.nav-actions {
+  width: 100%;
+  justify-content: center;
+  gap: 8px;
+}
+
+.search-input {
+  width: 140px;
+}
+
+.search-input:focus {
+  width: 180px;
+}
+
+.chat-header {
+  gap: 12px;
+  padding-bottom: 12px;
+}
+
+.chat-avatar {
+  width: 50px;
+  height: 50px;
+  border-width: 1.5px;
+}
+
+.chat-character-name {
+  font-size: 1.35rem;
+  letter-spacing: 0.08em;
+}
+
+.chat-character-meta {
+  font-size: 0.95rem;
+}
+
+.banner-container {
+  height: auto;
+  min-height: 100vh;
+  background-attachment: scroll;
+}
+
+.slider {
+  height: auto;
+  padding: 20px 0;
+}
+
+.carousel-track {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  padding: 0 16px;
+  transform: none !important;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+}
+
+.card-3d {
+  width: calc(100% - 32px);
+  max-width: 420px;
+  height: 400px;
+  border-radius: 12px;
+  border: 8px solid var(--gold);
+  box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+  filter: none;
+  opacity: 1;
+  transform: none;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-3d:not(.active) {
+  filter: none;
+  opacity: 1;
+}
+
+.card-3d:not(.active):hover {
+  filter: none;
+  opacity: 1;
+  transform: translateY(-4px);
+}
+
+.card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.card-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20px 16px;
+  background: linear-gradient(to top, rgba(10, 10, 18, 0.95), rgba(10, 10, 18, 0.8), transparent);
+  backdrop-filter: blur(4px);
+}
+
+.card-name {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--gold);
+  font-family: 'Cinzel', serif;
+  text-align: center;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
+  margin-bottom: 8px;
+}
+
+.btn-chat-3d {
+  width: 100%;
+  padding: 12px 24px;
+  border: 2px solid var(--wine);
+  border-radius: 8px;
+  font-family: 'Cinzel', serif;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  color: #0a0a12;
+  background: linear-gradient(135deg, var(--gold), var(--wine));
+  box-shadow: 0 4px 16px var(--gold-glow);
+  transition: var(--transition);
+  text-align: center;
+}
+
+.btn-chat-3d:hover {
+  transform: scale(1.02);
+  box-shadow: 0 6px 24px var(--gold-glow);
+}
+
+.carousel-nav {
+  display: none;
+}
+
+.pagination {
+  display: none;
+}
+
+@media (min-width: 768px) {
   .navbar {
-    flex-direction: column;
-    gap: 16px;
-    padding: 16px 16px;
-    position: relative;
+    flex-direction: row;
+    gap: 0;
+    padding: 16px 24px;
+    position: sticky;
+    max-width: 40%;
   }
 
   .nav-center {
-    width: 100%;
+    width: auto;
   }
 
   .nav-brand {
-    font-size: 1.25rem;
+    font-size: 1.5rem;
   }
 
   .nav-subtitle {
-    font-size: 0.7rem;
-    padding: 0 8px;
+    font-size: 0.9rem;
+    padding: 0;
   }
 
   .nav-actions {
-    width: 100%;
-    justify-content: center;
-    gap: 8px;
+    width: auto;
+    justify-content: flex-end;
   }
 
   .search-input {
-    width: 140px;
-  }
-
-  .search-input:focus {
     width: 180px;
   }
 
-  .chat-header {
-    gap: 12px;
-    padding-bottom: 12px;
+  .search-input:focus {
+    width: 220px;
   }
 
-  .chat-avatar {
-    width: 50px;
-    height: 50px;
-    border-width: 1.5px;
-  }
-
-  .chat-character-name {
-    font-size: 1.35rem;
-    letter-spacing: 0.08em;
-  }
-
-  .chat-character-meta {
-    font-size: 0.95rem;
-  }
-
-  /* Mobile Vertical Layout - Cards Stage */
   .banner-container {
-    height: auto;
-    min-height: 100vh;
-    background-attachment: scroll;
+    height: 100vh;
+    min-height: auto;
+    background-attachment: initial;
   }
 
   .slider {
-    height: auto;
-    padding: 20px 0;
+    height: 100%;
+    padding: 0;
   }
 
   .carousel-track {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 24px;
-    padding: 0 16px;
+    flex-direction: row;
+    gap: 0;
+    padding: 0;
     transform: none !important;
-    overflow-y: auto;
-    scroll-behavior: smooth;
+    overflow: hidden;
+    scroll-behavior: auto;
   }
 
-  /* Character Cards - Vertical Book Cover Style */
   .card-3d {
-    width: calc(100% - 32px);
-    max-width: 420px;
-    height: 400px;
-    border-radius: 12px;
+    width: 100%;
+    max-width: none;
+    height: 420px;
+    border-radius: 20px;
     border: 8px solid var(--gold);
     box-sizing: border-box;
     position: relative;
@@ -606,72 +735,34 @@ body::before {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
   }
 
-  .card-3d:not(.active) {
-    filter: none;
-    opacity: 1;
-  }
-
-  .card-3d:not(.active):hover {
-    filter: none;
-    opacity: 1;
-    transform: translateY(-4px);
-  }
-
-  .card-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  /* Glassmorphism overlay for text */
   .card-overlay {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 20px 16px;
-    background: linear-gradient(to top, rgba(10, 10, 18, 0.95), rgba(10, 10, 18, 0.8), transparent);
-    backdrop-filter: blur(4px);
+    padding: 24px 16px 20px;
+    background: linear-gradient(to top, rgba(10, 10, 18, 0.95), rgba(10, 10, 18, 0.7), transparent);
+    backdrop-filter: none;
   }
 
   .card-name {
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: var(--gold);
-    font-family: 'Cinzel', serif;
-    text-align: center;
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
-    margin-bottom: 8px;
+    font-size: 1.6rem;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    margin-bottom: 0;
   }
 
   .btn-chat-3d {
-    width: 100%;
-    padding: 12px 24px;
-    border: 2px solid var(--wine);
+    width: auto;
+    padding: 10px 24px;
+    border: 2px solid var(--gold);
     border-radius: 8px;
-    font-family: 'Cinzel', serif;
-    font-size: 1rem;
-    font-weight: 700;
-    cursor: pointer;
-    color: #0a0a12;
-    background: linear-gradient(135deg, var(--gold), var(--wine));
+    font-size: 0.95rem;
+    background: linear-gradient(135deg, var(--gold), #e6c25c);
     box-shadow: 0 4px 16px var(--gold-glow);
-    transition: var(--transition);
-    text-align: center;
   }
 
-  .btn-chat-3d:hover {
-    transform: scale(1.02);
-    box-shadow: 0 6px 24px var(--gold-glow);
-  }
-
-  /* Hide Navigation Arrows and Pagination on mobile */
   .carousel-nav {
-    display: none;
+    display: flex;
   }
 
   .pagination {
-    display: none;
+    display: flex;
   }
 }
 

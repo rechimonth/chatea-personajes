@@ -1,13 +1,20 @@
 export class Router {
   constructor(routes = []) {
-    this.routes = routes;
+    this.routes = [];
     this.currentPath = window.location.pathname;
     this.currentQuery = new URLSearchParams(window.location.search);
+
+    routes.forEach(({ path, handler }) => this.addRoute(path, handler));
+  }
+
+  normalizePath(path) {
+    const sanitized = path || "/";
+    return sanitized.length > 1 ? sanitized.replace(/\/$/, "") : sanitized;
   }
 
   navigate(path) {
     const [routePath, queryString] = path.split("?");
-    const url = new URL(window.location.origin + routePath);
+    const url = new URL(window.location.origin + this.normalizePath(routePath || "/"));
 
     if (queryString) {
       const params = new URLSearchParams(queryString);
@@ -20,11 +27,12 @@ export class Router {
     this.currentPath = url.pathname;
     this.currentQuery = new URLSearchParams(url.search);
     this.resolve();
+    return this;
   }
 
   replace(path) {
     const [routePath, queryString] = path.split("?");
-    const url = new URL(window.location.origin + routePath);
+    const url = new URL(window.location.origin + this.normalizePath(routePath || "/"));
 
     if (queryString) {
       const params = new URLSearchParams(queryString);
@@ -37,14 +45,17 @@ export class Router {
     this.currentPath = url.pathname;
     this.currentQuery = new URLSearchParams(url.search);
     this.resolve();
+    return this;
   }
 
   back() {
     window.history.back();
+    return this;
   }
 
   forward() {
     window.history.forward();
+    return this;
   }
 
   getParams() {
@@ -52,6 +63,18 @@ export class Router {
     for (const [key, value] of this.currentQuery.entries()) {
       params[key] = value;
     }
+
+    const currentRoute = this.getCurrentRoute();
+    if (!currentRoute) return params;
+
+    const values = currentRoute.regex.exec(this.normalizePath(this.currentPath));
+    if (!values) return params;
+
+    const keys = currentRoute.path.match(/:([^/]+)/g) || [];
+    keys.forEach((key, index) => {
+      params[key.replace(":", "")] = values[index + 1];
+    });
+
     return params;
   }
 
@@ -60,12 +83,12 @@ export class Router {
   }
 
   resolve() {
-    const path = this.currentPath;
-    const matchedRoute = this.routes.find((route) => route.match(path));
+    const path = this.normalizePath(this.currentPath);
+    const matchedRoute = this.routes.find((route) => route.regex.test(path));
 
     if (!matchedRoute) {
-      console.warn(`[Router] Ruta no encontrada: ${path}. Redirigiendo a /home.`);
-      this.replace("/home");
+      console.warn(`[Router] Ruta no encontrada: ${path}. Redirigiendo a /.`);
+      this.replace("/");
       return;
     }
 
@@ -82,6 +105,7 @@ export class Router {
     });
 
     this.resolve();
+    return this;
   }
 
   addRoute(path, handler) {
@@ -89,14 +113,13 @@ export class Router {
     this.routes.push({
       path,
       regex: new RegExp(`^${regexPath}$`),
-      match: (currentPath) => this.routes[this.routes.length - 1].regex.test(currentPath),
       handler,
     });
     return this;
   }
 
   getCurrentRoute() {
-    return this.routes.find((route) => route.match(this.currentPath)) || null;
+    return this.routes.find((route) => route.regex.test(this.normalizePath(this.currentPath))) || null;
   }
 }
 

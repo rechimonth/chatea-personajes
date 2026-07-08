@@ -72,6 +72,20 @@ describe("Router", () => {
     expect(router.getParam("ref")).toBe("home");
   });
 
+  it("should resolve the correct route when multiple routes are registered", () => {
+    const homeHandler = vi.fn();
+    const aboutHandler = vi.fn();
+    const router = new Router();
+
+    router.addRoute("/home", homeHandler);
+    router.addRoute("/about", aboutHandler);
+
+    router.navigate("/home");
+
+    expect(homeHandler).toHaveBeenCalledTimes(1);
+    expect(aboutHandler).not.toHaveBeenCalled();
+  });
+
   it("should get all params as object", () => {
     const handler = vi.fn();
     const router = new Router();

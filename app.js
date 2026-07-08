@@ -1,6 +1,7 @@
 import { renderHome, renderChat, renderAbout, renderNotFound } from "./views.js";
 import { store } from "./store.js";
 import { initTheme, toggleTheme, getTheme } from "./theme.js";
+import { Router } from "./router.js";
 
 const appMain = document.getElementById("app-main");
 const themeToggle = document.getElementById("theme-toggle");
@@ -14,7 +15,7 @@ function updateThemeButton() {
   themeToggle.classList.toggle("active", theme === "dark");
 }
 
-store.subscribe((state) => {
+store.subscribe(() => {
   updateThemeButton();
 });
 
@@ -25,46 +26,64 @@ if (themeToggle) {
   });
 }
 
-function handleClick(e) {
+function normalizePath(path) {
+  const sanitized = path || "/";
+  return sanitized.length > 1 ? sanitized.replace(/\/$/, "") : sanitized;
+}
+
+const router = new Router();
+
+router.addRoute("/", () => {
+  document.title = "Chatea con tu personaje favorito";
+  renderHome();
+});
+
+router.addRoute("/about", () => {
+  document.title = "Acerca de Chatea Personajes";
+  renderAbout();
+});
+
+router.addRoute("/chat", ({ id }) => {
+  if (id) {
+    document.title = "Chat";
+    renderChat(id);
+  } else {
+    document.title = "Chatea con tu personaje favorito";
+    renderHome();
+  }
+});
+
+router.addRoute("/404", () => {
+  document.title = "404 - No encontrado";
+  renderNotFound();
+});
+
+function handleChatClick(e) {
   const button = e.target.closest(".btn-chat-3d");
   if (!button) return;
 
   const id = button.getAttribute("data-id");
   if (id) {
-    window.history.pushState({}, "", `/chat?id=${id}`);
-    renderChat(id);
+    router.navigate(`/chat?id=${id}`);
   }
 }
 
-function normalizePath(path) {
-  return path.length > 1 ? path.replace(/\/$/, "") : path;
+function handleDataLinkClick(e) {
+  const link = e.target.closest("a[data-link]");
+  if (!link) return;
+
+  const href = link.getAttribute("href");
+  if (!href || /^(https?:|mailto:|#)/i.test(href)) return;
+
+  e.preventDefault();
+  router.navigate(href);
 }
 
-function handleRoute() {
-  const params = new URLSearchParams(window.location.search);
-  const characterId = params.get("id");
-  let path = window.location.pathname;
-  const normalized = normalizePath(path);
+window.router = router;
 
-  if (path !== normalized) {
-    window.history.replaceState({}, "", normalized + window.location.search);
-    path = normalized;
-  }
-
-  if (path === "/about") {
-    renderAbout();
-  } else if (characterId) {
-    renderChat(characterId);
-  } else if (path === "/" || path === "") {
-    renderHome();
-  } else {
-    document.title = "404 - No encontrado";
-    renderNotFound();
-  }
-}
-
-appMain.addEventListener("click", handleClick);
-window.addEventListener("popstate", handleRoute);
+appMain.addEventListener("click", handleChatClick);
+appMain.addEventListener("click", handleDataLinkClick);
+document.addEventListener("click", handleDataLinkClick);
 
 updateThemeButton();
-handleRoute();
+router.init();
