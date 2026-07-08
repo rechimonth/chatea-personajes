@@ -36,10 +36,20 @@ function handleClick(e) {
   }
 }
 
+function normalizePath(path) {
+  return path.length > 1 ? path.replace(/\/$/, "") : path;
+}
+
 function handleRoute() {
   const params = new URLSearchParams(window.location.search);
   const characterId = params.get("id");
-  const path = window.location.pathname;
+  let path = window.location.pathname;
+  const normalized = normalizePath(path);
+
+  if (path !== normalized) {
+    window.history.replaceState({}, "", normalized + window.location.search);
+    path = normalized;
+  }
 
   if (path === "/about") {
     renderAbout();

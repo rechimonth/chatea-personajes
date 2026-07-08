@@ -54,6 +54,10 @@ export function renderHome() {
   const app = getApp();
   
   app.innerHTML = `
+    <div class="home-header">
+      <h1 class="home-title">Chatea con tu Personaje Favorito</h1>
+      <p class="home-subtitle">Explora mundos literarios clásicos y mantén conversaciones naturales con personajes icónicos impulsados por inteligencia artificial</p>
+    </div>
     <div class="banner-container">
       <div class="carousel-viewport">
         <div class="carousel-track" id="carousel-track">
