@@ -65,9 +65,9 @@ body::before {
   align-items: center;
   justify-content: space-between;
   padding: 16px 24px;
-  background: rgba(10, 10, 18, 0.75);
+  background: var(--bg-secondary);
   backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(218, 189, 115, 0.2);
+  border-bottom: 1px solid var(--border-color);
   position: sticky;
   top: 0;
   z-index: 100;
@@ -86,7 +86,7 @@ body::before {
   align-items: center;
   gap: 8px;
   text-align: center;
-  background: rgba(10, 10, 18, 0.55);
+  background: var(--bg-secondary);
   backdrop-filter: blur(8px);
   border-radius: var(--radius-md);
   padding: 12px 16px;
@@ -121,8 +121,8 @@ body::before {
 }
 
 .search-input {
-  background: rgba(10, 10, 18, 0.7);
-  border: 1px solid rgba(218, 189, 115, 0.45);
+  background: var(--input-bg);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   padding: 8px 12px 8px 36px;
   color: var(--text-primary);
@@ -196,14 +196,36 @@ body::before {
   box-shadow: 0 0 12px var(--gold-glow);
 }
 
+.about-link {
+  color: var(--gold);
+  text-decoration: none;
+  transition: var(--transition);
+}
+.about-link svg {
+  color: var(--gold);
+}
+.about-link:hover {
+  color: var(--gold-glow);
+}
 .theme-toggle {
 
   position: relative;
 }
 
+.about-link {
+  color: var(--gold);
+  text-decoration: none;
+  transition: var(--transition);
+}
+.about-link svg {
+  color: var(--gold);
+}
+.about-link:hover {
+  color: var(--gold-glow);
+}
 .theme-toggle {
-  background: linear-gradient(135deg, rgba(26,26,46,0.9), rgba(10,10,12,0.9));
-  border: 1px solid rgba(218, 189, 115, 0.45);
+  background: linear-gradient(135deg, var(--bg-secondary), var(--bg-primary));
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   cursor: pointer;
   padding: 12px;
@@ -357,10 +379,10 @@ body::before {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: rgba(10, 10, 18, 0.85);
-  border: 2px solid rgba(218, 189, 115, 0.7);
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-color);
   color: var(--gold);
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45);
+  box-shadow: var(--shadow-card);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -426,7 +448,7 @@ body::before {
   .navbar {
     flex-direction: column;
     gap: 16px;
-    padding: 16px 12px;
+    padding: 16px 16px;
     position: relative;
   }
 
@@ -455,6 +477,26 @@ body::before {
 
   .search-input:focus {
     width: 180px;
+  }
+
+  .chat-header {
+    gap: 12px;
+    padding-bottom: 12px;
+  }
+
+  .chat-avatar {
+    width: 50px;
+    height: 50px;
+    border-width: 1.5px;
+  }
+
+  .chat-character-name {
+    font-size: 1.35rem;
+    letter-spacing: 0.08em;
+  }
+
+  .chat-character-meta {
+    font-size: 0.95rem;
   }
 
   /* Mobile Vertical Layout - Cards Stage */
@@ -641,14 +683,28 @@ body::before {
   font-family: 'Cormorant Garamond', serif;
 }
 
+
+.chat-messages::-webkit-scrollbar {
+  width: 6px;
+}
+.chat-messages::-webkit-scrollbar-track {
+  background: rgba(10, 10, 18, 0.6);
+}
+.chat-messages::-webkit-scrollbar-thumb {
+  background: rgba(218, 189, 115, 0.45);
+  border-radius: 3px;
+}
+.chat-messages::-webkit-scrollbar-thumb:hover {
+  background: var(--gold);
+}
 .chat-messages {
   flex: 1;
   overflow-y: auto;
-  background: rgba(10, 10, 18, 0.92);
-  border: 1px solid rgba(218, 189, 115, 0.35);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
   min-height: 400px;
-  max-height: calc(100vh - 340px);
+  max-height: calc(100dvh - 320px);
   display: flex;
   flex-direction: column;
   backdrop-filter: blur(6px);
@@ -658,7 +714,6 @@ body::before {
   display: flex;
   gap: 12px;
   padding: 16px;
-  border-bottom: 1px solid rgba(218, 189, 115, 0.2);
   position: relative;
   animation: fadeInUp 0.25s ease-out both;
   border-radius: 4px;
@@ -696,6 +751,7 @@ body::before {
   font-size: 1.14rem;
   color: var(--text-primary);
   line-height: 1.6;
+  font-weight: 500;
 }
 
 .bubble-actions {
@@ -706,8 +762,15 @@ body::before {
   transition: opacity 0.15s ease;
 }
 
-.chat-bubble:hover .bubble-actions {
+.chat-bubble:hover .bubble-actions,
+.bubble-actions:focus-within {
   opacity: 1;
+}
+
+@media (hover: none) {
+  .bubble-actions {
+    opacity: 1;
+  }
 }
 
 .copy-btn {
@@ -731,8 +794,13 @@ body::before {
   color: #4ade80;
 }
 
+.chat-bubble-character {
+  background: var(--bubble-character);
+  border: 1px solid var(--border-color);
+}
 .chat-bubble-user {
-  background: rgba(114, 47, 55, 0.2);
+  background: var(--bubble-user);
+  border: 1px solid var(--border-color);
   flex-direction: row-reverse;
 }
 
@@ -758,7 +826,7 @@ body::before {
 .chat-input {
   flex: 1;
   padding: 14px 16px;
-  background: rgba(26, 26, 46, 0.8);
+  background: var(--input-bg);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   color: var(--text-primary);
@@ -766,6 +834,7 @@ body::before {
   font-size: 0.95rem;
   outline: none;
   transition: var(--transition);
+  backdrop-filter: blur(4px);
 }
 
 .chat-input:focus {

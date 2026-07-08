@@ -2,17 +2,17 @@ const THEME_STORAGE_KEY = "chatapp_theme";
 
 const THEME_COLORS = {
   light: {
-    bgPrimary: "#ffffff",
-    bgSecondary: "#f3f4f6",
-    bgCard: "#ffffff",
-    textPrimary: "#111827",
-    textSecondary: "#6b7280",
-    borderColor: "#e5e7eb",
-    shadowCard: "0 4px 24px rgba(0, 0, 0, 0.08)",
-    inputBg: "#ffffff",
-    bubbleUser: "#f3f4f6",
-    bubbleCharacter: "#ffffff",
-    overlay: "rgba(255, 255, 255, 0.9)",
+    bgPrimary: "#f5f0e6",
+    bgSecondary: "#ece5d8",
+    bgCard: "#f7f2ea",
+    textPrimary: "#2b2416",
+    textSecondary: "#6b5d4a",
+    borderColor: "rgba(218, 189, 115, 0.55)",
+    shadowCard: "0 4px 24px rgba(139, 105, 20, 0.12)",
+    inputBg: "rgba(245, 240, 230, 0.85)",
+    bubbleUser: "rgba(139, 105, 20, 0.14)",
+    bubbleCharacter: "rgba(247, 242, 234, 0.92)",
+    overlay: "rgba(245, 240, 230, 0.94)",
   },
   dark: {
     bgPrimary: "#0f0f0f",
