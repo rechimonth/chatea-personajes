@@ -50,8 +50,15 @@ function cardHTML(character) {
   `;
 }
 
+function setHomeHeaderVisible(visible) {
+  const header = document.querySelector(".home-header");
+  if (!header) return;
+  header.style.display = visible ? "" : "none";
+}
+
 export function renderHome() {
   const app = getApp();
+  setHomeHeaderVisible(true);
   
   app.innerHTML = `
     <div class="home-header">
@@ -240,6 +247,7 @@ function renderTypingIndicator(character) {
 }
 
 function renderChat(characterId) {
+  setHomeHeaderVisible(false);
   const character = CHARACTERS.find((c) => c.id === characterId);
   if (!character) return;
 
@@ -471,6 +479,7 @@ body: JSON.stringify({
 export { renderChat, renderAbout };
 
 function renderAbout() {
+  setHomeHeaderVisible(false);
   const app = getApp();
   app.innerHTML = `
     <div class="about-view">
