@@ -67,7 +67,7 @@ describe("views", () => {
 
       const app = document.getElementById("app-main");
       expect(app.innerHTML).toContain("banner-container");
-      expect(app.innerHTML).toContain("slider");
+      expect(app.innerHTML).toContain("carousel-viewport");
     });
 
     it("should render all characters from CHARACTERS", () => {

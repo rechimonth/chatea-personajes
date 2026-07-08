@@ -55,7 +55,7 @@ export function renderHome() {
   
   app.innerHTML = `
     <div class="banner-container">
-      <div class="slider">
+      <div class="carousel-viewport">
         <div class="carousel-track" id="carousel-track">
           ${CHARACTERS.map((char, index) => `
             <div class="card-3d" data-id="${char.id}">
@@ -69,15 +69,15 @@ export function renderHome() {
             </div>
           `).join("")}
         </div>
-      </div>
-      <button class="carousel-nav prev" id="carousel-prev" aria-label="Anterior">
-        &larr;
-      </button>
-      <button class="carousel-nav next" id="carousel-next" aria-label="Siguiente">
-        &rarr;
-      </button>
-      <div class="pagination" id="pagination">
-        ${CHARACTERS.map((_, i) => `<div class="pagination-dot ${i === 0 ? 'active' : ''}" data-index="${i}"></div>`).join("")}
+        <button class="carousel-nav prev" id="carousel-prev" aria-label="Anterior">
+          &larr;
+        </button>
+        <button class="carousel-nav next" id="carousel-next" aria-label="Siguiente">
+          &rarr;
+        </button>
+        <div class="pagination" id="pagination">
+          ${CHARACTERS.map((_, i) => `<div class="pagination-dot ${i === 0 ? 'active' : ''}" data-index="${i}"></div>`).join("")}
+        </div>
       </div>
     </div>
   `;
