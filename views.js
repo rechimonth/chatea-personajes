@@ -115,12 +115,28 @@ export function renderHome() {
       activeIndex = (activeIndex - 1 + CHARACTERS.length) % CHARACTERS.length;
       updateCarousel();
     });
+
+    prevBtn.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+        e.preventDefault();
+        activeIndex = (activeIndex - 1 + CHARACTERS.length) % CHARACTERS.length;
+        updateCarousel();
+      }
+    });
   }
 
   if (nextBtn) {
     nextBtn.addEventListener("click", () => {
       activeIndex = (activeIndex + 1) % CHARACTERS.length;
       updateCarousel();
+    });
+
+    nextBtn.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+        e.preventDefault();
+        activeIndex = (activeIndex + 1) % CHARACTERS.length;
+        updateCarousel();
+      }
     });
   }
 
@@ -134,44 +150,229 @@ export function renderHome() {
   /* Search functionality */
   const searchForm = document.querySelector('.search-form');
   const searchInput = document.querySelector('.search-input');
+  const searchBtn = searchForm?.querySelector('button[type="submit"], button');
+
+  const LOCAL_CHARACTERS = [
+    { id: 'dracula', name: 'Drácula' },
+    { id: 'frankenstein', name: 'Criatura' },
+    { id: 'sherlock-holmes', name: 'Sherlock' },
+    { id: 'alice-wonderland', name: 'Alicia' },
+  ];
+
+  function normalizeText(str = '') {
+    return str
+      .trim()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/\p{Diacritic}/gu, '');
+  }
+
+  function levenshtein(a = '', b = '') {
+    // Distancia simple para tolerar errores leves.
+    if (a === b) return 0;
+    if (!a.length) return b.length;
+    if (!b.length) return a.length;
+
+    const matrix = Array.from({ length: a.length + 1 }, () => new Array(b.length + 1).fill(0));
+    for (let i = 0; i <= a.length; i++) matrix[i][0] = i;
+    for (let j = 0; j <= b.length; j++) matrix[0][j] = j;
+
+    for (let i = 1; i <= a.length; i++) {
+      for (let j = 1; j <= b.length; j++) {
+        const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+        matrix[i][j] = Math.min(
+          matrix[i - 1][j] + 1,
+          matrix[i][j - 1] + 1,
+          matrix[i - 1][j - 1] + cost
+        );
+      }
+    }
+
+    return matrix[a.length][b.length];
+  }
+
+  function getMatchingCharacters(queryRaw = '') {
+    const query = normalizeText(queryRaw);
+    if (!query) return [];
+
+    // Coincidencia flexible: incluye o distancia pequeña.
+    const scored = LOCAL_CHARACTERS.map((c) => {
+      const nameN = normalizeText(c.name);
+      const includes = nameN.includes(query) || query.includes(nameN);
+      const distance = levenshtein(query, nameN);
+
+      // Heurística: si incluye -> mejor score.
+      const score = includes ? -100 : distance;
+      return { ...c, score, distance };
+    });
+
+    scored.sort((x, y) => x.score - y.score);
+
+    // Filtrado: distancia permitida según longitud.
+    return scored.filter((c) => {
+      const nameN = normalizeText(c.name);
+      const maxDist = Math.max(1, Math.floor(Math.min(query.length, nameN.length) / 3));
+      const includes = normalizeText(c.name).includes(normalizeText(queryRaw)) || normalizeText(queryRaw).includes(normalizeText(c.name));
+      return includes || c.distance <= maxDist;
+    });
+  }
+
+  function removeSuggestions() {
+    const existing = document.getElementById('search-suggestions');
+    if (existing) existing.remove();
+  }
+
+  function showTooltip(message) {
+    removeTooltip();
+
+    const tooltip = document.createElement('div');
+    tooltip.id = 'search-error-tooltip';
+    tooltip.className = 'search-error-tooltip';
+    tooltip.textContent = message;
+
+    const target = searchBtn || searchInput;
+    const rect = target?.getBoundingClientRect();
+
+    if (rect) {
+      tooltip.style.position = 'fixed';
+      tooltip.style.left = `${rect.left + rect.width / 2}px`;
+      tooltip.style.top = `${rect.top - 10}px`;
+      tooltip.style.transform = 'translate(-50%, -100%)';
+    }
+
+    document.body.appendChild(tooltip);
+    window.setTimeout(() => removeTooltip(), 3000);
+  }
+
+  function removeTooltip() {
+    const t = document.getElementById('search-error-tooltip');
+    if (t) t.remove();
+  }
+
+  function renderSuggestions(list) {
+    removeSuggestions();
+    if (!list.length) return;
+
+    const wrapper = document.createElement('div');
+    wrapper.id = 'search-suggestions';
+    wrapper.className = 'search-suggestions';
+
+    // Contenedor anclado al input (no al body) para que sea estable.
+    const inputRect = searchInput?.getBoundingClientRect();
+    if (inputRect) {
+      wrapper.style.position = 'fixed';
+      wrapper.style.left = `${inputRect.left}px`;
+      wrapper.style.top = `${inputRect.bottom + 6}px`;
+      wrapper.style.width = `${inputRect.width}px`;
+      wrapper.style.zIndex = '1000';
+    }
+
+    list.slice(0, 6).forEach((c) => {
+      const item = document.createElement('button');
+      item.type = 'button';
+      item.className = 'search-suggestion-item';
+      item.textContent = c.name;
+      item.addEventListener('click', () => {
+        searchInput.value = c.name;
+        removeSuggestions();
+      });
+      wrapper.appendChild(item);
+    });
+
+    document.body.appendChild(wrapper);
+  }
+
+  function clearCardFilter() {
+    const cards = document.querySelectorAll('.card-3d');
+    cards.forEach((card) => {
+      card.style.display = '';
+    });
+    const existing = document.querySelector('.no-results');
+    if (existing) existing.remove();
+  }
+
+  function filterCardsByQuery(queryRaw) {
+    const query = normalizeText(queryRaw);
+    const cards = document.querySelectorAll('.card-3d');
+    if (!query) return clearCardFilter();
+
+    let visibleCount = 0;
+    cards.forEach((card, index) => {
+      const char = CHARACTERS[index];
+      if (!char) return;
+
+      const haystack = normalizeText(char.name + ' ' + char.category + ' ' + char.description + ' ' + char.tags.join(' '));
+      const match = haystack.includes(query);
+
+      card.style.display = match ? '' : 'none';
+      if (match) visibleCount++;
+    });
+
+    const existing = document.querySelector('.no-results');
+    if (existing) existing.remove();
+
+    if (visibleCount === 0) {
+      const noResults = document.createElement('div');
+      noResults.className = 'no-results';
+      noResults.textContent = 'No se encontraron personajes.';
+      const track = document.getElementById('carousel-track');
+      if (track) track.insertAdjacentElement('afterend', noResults);
+    }
+  }
+
+  let searchOutsideHandler = null;
 
   if (searchForm && searchInput) {
+    if (searchOutsideHandler) {
+      document.removeEventListener('click', searchOutsideHandler);
+    }
+
+    searchInput.addEventListener('input', () => {
+      const q = searchInput.value;
+      const matches = getMatchingCharacters(q);
+
+      if (normalizeText(q).length) renderSuggestions(matches);
+      else removeSuggestions();
+
+      filterCardsByQuery(q);
+    });
+
+    searchOutsideHandler = (e) => {
+      const t = e.target;
+      if (!t) return;
+      const isInside = t.closest('#search-suggestions') || t.closest('.search-form');
+      if (!isInside) removeSuggestions();
+    };
+
+    document.addEventListener('click', searchOutsideHandler);
+
     searchForm.addEventListener('submit', (e) => {
       e.preventDefault();
-      const query = searchInput.value.trim().toLowerCase();
-      const cards = document.querySelectorAll('.card-3d');
+      const raw = searchInput.value.trim();
+      const matches = getMatchingCharacters(raw);
 
-      if (!query) {
-        cards.forEach((card) => {
-          card.style.display = '';
-        });
+      if (!raw) {
+        clearCardFilter();
         return;
       }
 
-      let visibleCount = 0;
-      cards.forEach((card, index) => {
-        const char = CHARACTERS[index];
-        if (!char) return;
-
-        const searchText = (char.name + ' ' + char.category + ' ' + char.description + ' ' + char.tags.join(' ')).toLowerCase();
-        const match = searchText.includes(query);
-
-        card.style.display = match ? '' : 'none';
-        if (match) visibleCount++;
-      });
-
-      const existing = document.querySelector('.no-results');
-      if (existing) existing.remove();
-
-      if (visibleCount === 0) {
-        const noResults = document.createElement('div');
-        noResults.className = 'no-results';
-        noResults.textContent = 'No se encontraron personajes.';
-        const track = document.getElementById('carousel-track');
-        if (track) track.insertAdjacentElement('afterend', noResults);
+      if (matches.length) {
+        const charId = matches[0].id;
+        if (charId) {
+          window.history.pushState({}, '', `/chat?id=${charId}`);
+          window.dispatchEvent(new PopStateEvent('popstate'));
+        } else {
+          clearCardFilter();
+        }
+        removeTooltip();
+        removeSuggestions();
+        return;
       }
+
+      showTooltip('El personaje no existe');
     });
   }
+
 
   document.querySelectorAll(".btn-chat-3d").forEach((btn) => {
     btn.addEventListener("click", (e) => {
