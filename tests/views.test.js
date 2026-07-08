@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { renderHome, renderChat, renderAbout } from "../views.js";
+import { renderHome, renderChat, renderAbout, renderNotFound } from "../views.js";
 
 vi.mock("../characters.js", () => ({
   CHARACTERS: [
@@ -171,6 +171,18 @@ it("should render character cards with button", () => {
 
       const app = document.getElementById("app-main");
       expect(app.innerHTML).toContain("back-link");
+    });
+  });
+
+  describe("renderNotFound", () => {
+    it("should render not found view with message and back link", () => {
+      renderNotFound();
+
+      const app = document.getElementById("app-main");
+      expect(app.innerHTML).toContain("404");
+      expect(app.innerHTML).toContain("Página no encontrada");
+      expect(app.innerHTML).toContain("Volver al inicio");
+      expect(app.innerHTML).toContain("not-found-view");
     });
   });
 });

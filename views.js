@@ -476,7 +476,21 @@ body: JSON.stringify({
   }
 }
 
-export { renderChat, renderAbout };
+export { renderChat, renderAbout, renderNotFound };
+
+function renderNotFound() {
+  const app = getApp();
+  app.innerHTML = `
+    <div class="not-found-view">
+      <h1>404</h1>
+      <p>Página no encontrada</p>
+      <a href="/" class="back-link" data-link>
+        <span class="back-icon">&lt;</span>
+        Volver al inicio
+      </a>
+    </div>
+  `;
+}
 
 function renderAbout() {
   setHomeHeaderVisible(false);

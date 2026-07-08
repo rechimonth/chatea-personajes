@@ -1,4 +1,4 @@
-import { renderHome, renderChat, renderAbout } from "./views.js";
+import { renderHome, renderChat, renderAbout, renderNotFound } from "./views.js";
 import { store } from "./store.js";
 import { initTheme, toggleTheme, getTheme } from "./theme.js";
 
@@ -55,8 +55,11 @@ function handleRoute() {
     renderAbout();
   } else if (characterId) {
     renderChat(characterId);
-  } else {
+  } else if (path === "/" || path === "") {
     renderHome();
+  } else {
+    document.title = "404 - No encontrado";
+    renderNotFound();
   }
 }
 

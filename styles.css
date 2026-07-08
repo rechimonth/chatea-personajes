@@ -1173,3 +1173,49 @@ body::before {
     transform: translateY(0);
   }
 }
+
+.not-found-view {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  text-align: center;
+  gap: 16px;
+  padding: 24px;
+  animation: grimFadeIn 0.7s ease-out both;
+}
+
+.not-found-view h1 {
+  font-size: 4rem;
+  color: var(--gold);
+  font-family: 'Cinzel', serif;
+  letter-spacing: 0.12em;
+  text-shadow: 0 0 18px var(--gold-glow);
+}
+
+.not-found-view p {
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+  font-family: 'Cormorant Garamond', serif;
+}
+
+.not-found-view .back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--gold);
+  text-decoration: none;
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  padding: 12px 18px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: var(--bg-secondary);
+  transition: var(--transition);
+}
+
+.not-found-view .back-link:hover {
+  border-color: var(--gold);
+  box-shadow: 0 0 14px var(--gold-glow);
+}
