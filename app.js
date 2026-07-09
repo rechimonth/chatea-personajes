@@ -22,6 +22,8 @@ root.style.setProperty("--background-dark-url", `url('${normalizedAssetRoot}/bac
 
 initTheme();
 
+// Mantener assetRoot como valor global compatible (evita referencias implícitas).
+const assetRoot = window.ASSET_ROOT || normalizedAssetRoot;
 
 function updateThemeButton() {
   if (!themeToggle) return;

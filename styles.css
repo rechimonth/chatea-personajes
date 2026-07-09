@@ -35,9 +35,8 @@ body {
   font-family: 'Cinzel', 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
   background-color: var(--bg-primary);
   background-image:
-    var(--background-light-url, url('/public/img/background-light.png')),
-    url('/img/background-light.png'),
-    url('/public/img/background-light.png');
+    var(--background-light-url, url('/img/background-light.png')),
+    url('/img/background-light.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -54,9 +53,8 @@ body::before {
 
 [data-theme="dark"] body {
   background-image:
-    var(--background-dark-url, url('/public/img/background-mystical.png')),
-    url('/img/background-mystical.png'),
-    url('/public/img/background-mystical.png');
+    var(--background-dark-url, url('/img/background-mystical.png')),
+    url('/img/background-mystical.png');
 }
 
 .banner-container {
