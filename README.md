@@ -1,4 +1,5 @@
 # Chatea con tu personaje favorito
+<img width="1536" height="1024" alt="ChatGPT Image 7 jul 2026, 12_27_26 p m" src="https://github.com/user-attachments/assets/839f7ea5-7c51-48dd-a123-ce2f8fb836c7" />
 
 Single Page Application desarrollada para **ComicSansCon**, agencia digital especializada en experiencias interactivas para fans de videojuegos, películas y series de televisión.
 
@@ -111,16 +112,17 @@ vercel --prod
 > Coloca aquí tus capturas reales. Si aún no las tienes, crea estas rutas de ejemplo o reemplaza las paths por las tuyas.
 
 ### Home
-- **Desktop:** `./public/screenshots/home-desktop.png`
-- **Mobile:** `./public/screenshots/home-mobile.png`
+
+<img width="720" height="1600" alt="WhatsApp Image 2026-07-09 at 15 38 23" src="https://github.com/user-attachments/assets/59b7b81a-3ad7-40e9-ac28-671d048caeea" />
 
 ### Chat
-- **Desktop:** `./public/screenshots/chat-desktop.png`
-- **Mobile:** `./public/screenshots/chat-mobile.png`
+
+<img width="720" height="1600" alt="WhatsApp Image 2026-07-09 at 15 38 23 (1)" src="https://github.com/user-attachments/assets/0799a3ff-f2c9-43dc-91aa-0edbceb04022" />
+
 
 ### About
-- **Desktop:** `./public/screenshots/about-desktop.png`
-- **Mobile:** `./public/screenshots/about-mobile.png`
+
+<img width="720" height="1600" alt="WhatsApp Image 2026-07-09 at 15 38 22" src="https://github.com/user-attachments/assets/e30a9913-b7cf-4d12-be89-60e7e1f37323" />
 
 ---
 
@@ -175,7 +177,5 @@ Además, agregamos **persistencia en localStorage**. El historial de conversacio
 El diseño *fantasy UI* funcionaba bien en escritorio, pero en pantallas pequeñas el carrusel 3D horizontal se volvía contraproducente: las tarjetas laterales quedaban parcialmente ocultas, los botones laterales eran difíciles de alcanzar con el pulgar y el scroll táctil competía con la animación 3D. Decidimos entonces rediseñar completamente la experiencia móvil.
 
 En pantallas menores a 768px, transformamos el carrusel en un **flujo vertical nativo**. Cada personaje se presenta como una portada de libro apilada, con scroll fluido (`scroll-behavior: smooth`), botones grandes y accesibles, y overlay de texto con efecto glassmorphism que garantiza legibilidad sin sacrificar la estética. Ocultamos las flechas de navegación y los puntos de paginación, porque en móvil el dedo del usuario es el mejor cursor.
-
-Simultáneamente, optimizamos el **navbar**: en lugar de mantenerse rígido en una fila horizontal, se reorganiza verticalmente para evitar que la barra de búsqueda y el botón de tema se solapen o se escapen de la pantalla.
 
 **Impacto para el usuario final:** Ahora es posible explorar todos los personajes con el pulgar, de forma natural y sin esfuerzo. Las tarjetas son grandes, los botones “Chatear” son fáciles de tocar, y la información de cada personaje se presenta sin competir por la atención. La aplicación se siente igual de mágica en un monitor 4K que en la pantalla de un celular de gama media.
