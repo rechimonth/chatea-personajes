@@ -21,11 +21,12 @@ function tagsHTML(tags = []) {
 
 function cardHTML(character) {
   const gradient = `linear-gradient(135deg, ${character.primaryColor}, ${character.secondaryColor})`;
+  const assetPrefix = getAssetPrefix();
 
   return `
     <article class="character-card" style="--primary: ${character.primaryColor}; --secondary: ${character.secondaryColor}">
       <div class="card-avatar" style="background: ${gradient}">
-        <img src="${character.avatar}" alt="${escapeHTML(character.name)}" loading="lazy" />
+        <img src="${assetPrefix}/${character.avatar}" alt="${escapeHTML(character.name)}" loading="lazy" />
       </div>
       <div class="card-body">
         <div class="card-title-row">
@@ -50,15 +51,20 @@ function cardHTML(character) {
   `;
 }
 
+function getAssetPrefix(assetRoot = window.ASSET_ROOT || "/img") {
+  return assetRoot.replace(/\/?$/, "");
+}
+
 function setHomeHeaderVisible(visible) {
   const header = document.querySelector(".home-header");
   if (!header) return;
   header.style.display = visible ? "" : "none";
 }
 
-export function renderHome() {
+export function renderHome(assetRoot = window.ASSET_ROOT || "/img") {
   const app = getApp();
   setHomeHeaderVisible(true);
+  const assetPrefix = getAssetPrefix(assetRoot);
   
   app.innerHTML = `
     <div class="home-header">
@@ -68,9 +74,11 @@ export function renderHome() {
     <div class="banner-container">
       <div class="carousel-viewport">
         <div class="carousel-track" id="carousel-track">
-          ${CHARACTERS.map((char, index) => `
+          ${CHARACTERS.map((char, index) => {
+            const imageSrc = `${assetPrefix}/${char.avatar}`;
+            return `
             <div class="card-3d" data-id="${char.id}">
-              <img src="${char.avatar}" alt="${escapeHTML(char.name)}" class="card-image" loading="lazy" />
+              <img src="${imageSrc}" alt="${escapeHTML(char.name)}" class="card-image" loading="lazy" />
               <div class="card-overlay">
                 <div class="card-overlay-content">
                   <h3 class="card-name">${escapeHTML(char.name)}</h3>
@@ -78,7 +86,8 @@ export function renderHome() {
                 </div>
               </div>
             </div>
-          `).join("")}
+          `;
+          }).join("")}
         </div>
         <button class="carousel-nav prev" id="carousel-prev" aria-label="Anterior">
           &larr;
@@ -94,6 +103,7 @@ export function renderHome() {
   `;
 
   const track = document.getElementById("carousel-track");
+  const viewport = document.querySelector(".carousel-viewport");
   const cards = document.querySelectorAll(".card-3d");
   const dots = document.querySelectorAll(".pagination-dot");
   const prevBtn = document.getElementById("carousel-prev");
@@ -101,13 +111,41 @@ export function renderHome() {
   
   let activeIndex = 0;
 
-  function updateCarousel() {
+  function updateCarousel({ smooth = true } = {}) {
     cards.forEach((card, i) => {
       card.classList.toggle("active", i === activeIndex);
     });
     dots.forEach((dot, i) => {
       dot.classList.toggle("active", i === activeIndex);
     });
+    const activeCard = cards[activeIndex];
+    if (activeCard) {
+      let scrolled = false;
+      if (viewport) {
+        try {
+          if (typeof activeCard.scrollIntoView === "function") {
+            activeCard.scrollIntoView({ behavior: smooth ? "smooth" : "auto", inline: "center", block: "nearest" });
+            scrolled = true;
+          }
+        } catch {
+          scrolled = false;
+        }
+
+        if (!scrolled) {
+          const cardRect = activeCard.getBoundingClientRect();
+          const viewportRect = viewport.getBoundingClientRect();
+          const offset = cardRect.left - viewportRect.left - (viewportRect.width - cardRect.width) / 2;
+          viewport.scrollLeft += smooth ? offset : Math.round(offset);
+        }
+      }
+    }
+  }
+
+  function initCarousel() {
+    if (viewport) {
+      viewport.scrollLeft = 0;
+    }
+    window.requestAnimationFrame(() => updateCarousel({ smooth: false }));
   }
 
   if (prevBtn) {
@@ -146,6 +184,8 @@ export function renderHome() {
       updateCarousel();
     });
   });
+
+  initCarousel();
 
   /* Search functionality */
   const searchForm = document.querySelector('.search-form');
@@ -331,11 +371,17 @@ export function renderHome() {
       const q = searchInput.value;
       const matches = getMatchingCharacters(q);
 
-      if (normalizeText(q).length) renderSuggestions(matches);
-      else removeSuggestions();
+      if (normalizeText(q).length) {
+        renderSuggestions(matches);
+        const el = document.getElementById('search-suggestions');
+        if (el) el.classList.add('show');
+      } else {
+        removeSuggestions();
+      }
 
       filterCardsByQuery(q);
     });
+
 
     searchOutsideHandler = (e) => {
       const t = e.target;
@@ -397,11 +443,12 @@ function renderMessageBubble(message, character, isUser = false) {
     hour: "2-digit",
     minute: "2-digit",
   });
+  const assetPrefix = getAssetPrefix();
 
   const avatarHTML = isUser
     ? `<div class="bubble-avatar bubble-avatar-user">Tú</div>`
     : `<div class="bubble-avatar" style="background: linear-gradient(135deg, ${character.primaryColor}, ${character.secondaryColor})">
-        <img src="${character.avatar}" alt="${escapeHTML(character.name)}" />
+        <img src="${assetPrefix}/${character.avatar}" alt="${escapeHTML(character.name)}" />
        </div>`;
 
   const nameHTML = isUser
@@ -432,10 +479,12 @@ function renderMessageBubble(message, character, isUser = false) {
 }
 
 function renderTypingIndicator(character) {
+  const assetPrefix = getAssetPrefix();
+
   return `
     <div class="chat-bubble chat-bubble-character typing-indicator" id="typing-indicator" role="status" aria-label="${escapeHTML(character.name)} está escribiendo...">
       <div class="bubble-avatar" style="background: linear-gradient(135deg, ${character.primaryColor}, ${character.secondaryColor})">
-        <img src="${character.avatar}" alt="${escapeHTML(character.name)}" />
+        <img src="${assetPrefix}/${character.avatar}" alt="${escapeHTML(character.name)}" />
       </div>
       <div class="bubble-content">
         <span class="bubble-name" style="color: ${character.primaryColor}">${escapeHTML(character.name)}</span>
@@ -447,8 +496,9 @@ function renderTypingIndicator(character) {
   `;
 }
 
-function renderChat(characterId) {
+function renderChat(characterId, assetRoot = window.ASSET_ROOT || "/img") {
   setHomeHeaderVisible(false);
+  const assetPrefix = getAssetPrefix(assetRoot);
   const character = CHARACTERS.find((c) => c.id === characterId);
   if (!character) return;
 
@@ -486,7 +536,7 @@ getApp().innerHTML = `
 
       <div class="chat-header">
         <div class="chat-avatar" style="background: ${gradient}">
-          <img src="${character.avatar}" alt="${escapeHTML(character.name)}" />
+          <img src="${assetPrefix}/${character.avatar}" alt="${escapeHTML(character.name)}" />
         </div>
         <div class="chat-header-info">
           <h1 class="chat-character-name">${escapeHTML(character.name)}</h1>

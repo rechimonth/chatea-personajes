@@ -63,6 +63,8 @@ function applyTheme(theme) {
   root.style.setProperty("--bg-primary", colors.bgPrimary);
   root.style.setProperty("--bg-secondary", colors.bgSecondary);
   root.style.setProperty("--bg-card", colors.bgCard);
+  // navbar background variable (used by styles.css)
+  root.style.setProperty("--bg-nav", colors.bgSecondary);
   root.style.setProperty("--text-primary", colors.textPrimary);
   root.style.setProperty("--text-secondary", colors.textSecondary);
   root.style.setProperty("--border-color", colors.borderColor);
