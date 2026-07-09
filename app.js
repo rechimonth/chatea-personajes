@@ -6,21 +6,13 @@ import { Router } from "./router.js";
 const appMain = document.getElementById("app-main");
 const themeToggle = document.getElementById("theme-toggle");
 
-async function detectAssetRoot() {
-  const candidates = ["/img", "/public/img"];
-  for (const base of candidates) {
-    try {
-      const response = await fetch(`${base}/background-light.png`, { method: "HEAD" });
-      if (response.ok) return base;
-    } catch {
-      // ignore and try next candidate
-    }
-  }
+function detectAssetRootSync() {
+  // Evita top-level await para compatibilidad con Vercel build (esbuild target).
+  // Asumimos que en producción Vercel sirve /img desde /public/img.
   return "/img";
 }
 
-const assetRoot = await detectAssetRoot();
-const normalizedAssetRoot = assetRoot.replace(/\/$/, "");
+const normalizedAssetRoot = detectAssetRootSync().replace(/\/$/, "");
 window.ASSET_ROOT = normalizedAssetRoot;
 
 const root = document.documentElement;
@@ -29,6 +21,7 @@ root.style.setProperty("--background-light-url", `url('${normalizedAssetRoot}/ba
 root.style.setProperty("--background-dark-url", `url('${normalizedAssetRoot}/background-mystical.png')`);
 
 initTheme();
+
 
 function updateThemeButton() {
   if (!themeToggle) return;

@@ -99,12 +99,33 @@ vercel --prod
 
 ---
 
-## URL pública
+## URL pública (Producción)
 
-[https://chatea-personajes.vercel.app](https://chatea-personajes.vercel.app)
+**URL:** https://chatea-personajes.vercel.app  
+> Verificado funcional al momento de la entrega: **(rellenar dd/mm/aaaa)**
 
+---
 
-## Registro del uso de AI en el proyecto.
+## Screenshots (Home / Chat / About)
+
+> Coloca aquí tus capturas reales. Si aún no las tienes, crea estas rutas de ejemplo o reemplaza las paths por las tuyas.
+
+### Home
+- **Desktop:** `./public/screenshots/home-desktop.png`
+- **Mobile:** `./public/screenshots/home-mobile.png`
+
+### Chat
+- **Desktop:** `./public/screenshots/chat-desktop.png`
+- **Mobile:** `./public/screenshots/chat-mobile.png`
+
+### About
+- **Desktop:** `./public/screenshots/about-desktop.png`
+- **Mobile:** `./public/screenshots/about-mobile.png`
+
+---
+
+## Registro del uso de IA en el proyecto.
+
 
 ### 1. Evolución del modelo de inteligencia artificial — De Gemini 2.5 Flash a Gemini 3.1 Flash Lite
 **Fecha:** 2026-07-07  
