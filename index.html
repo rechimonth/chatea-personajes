@@ -34,10 +34,24 @@
               <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
             </span>
           </button>
+          <button id="upgrade-btn" class="upgrade-btn">Premium</button>
+          <button id="auth-login" class="auth-btn" data-link="/login">Entrar</button>
+          <button id="auth-logout" class="auth-btn auth-btn--ghost" hidden>Cerrar sesion</button>
         </div>
       </div>
     </nav>
     <main id="app-main" role="main"></main>
+    <div id="daily-limit-modal" class="modal" hidden>
+      <div class="modal-content">
+        <h2>Limite diario alcanzado</h2>
+        <p>Llegaste a 10 mensajes gratuitos por dia.</p>
+        <p>Upgrade a Premium por $2.99/mes para chatear sin limites.</p>
+        <div class="modal-actions">
+          <button id="modal-upgrade" class="upgrade-btn">Upgrade a Premium</button>
+          <button id="modal-close" class="upgrade-btn upgrade-btn--ghost">Cerrar</button>
+        </div>
+      </div>
+    </div>
   </div>
   <script type="module" src="app.js"></script>
 </body>

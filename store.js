@@ -1,6 +1,7 @@
 import { saveTheme, loadTheme } from "./theme.js";
 
 const STORAGE_THEME = "chatapp_theme";
+const STORAGE_TOKEN = "chatapp_token";
 
 function getHistoryKey(characterId) {
   return `chatapp_history_${characterId}`;
@@ -13,6 +14,10 @@ function createInitialState() {
     theme: "light",
     messages: [],
     dailyMessages: 0,
+    token: null,
+    user: null,
+    subscription: null,
+    authLoaded: false,
   };
 }
 
@@ -36,6 +41,19 @@ function loadFromStorage() {
   } catch (error) {
     console.warn("[Store] Could not load theme:", error);
   }
+
+  try {
+    const raw = window.localStorage.getItem(STORAGE_TOKEN);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && parsed.token) {
+        state.token = parsed.token;
+        state.user = parsed.user || null;
+      }
+    }
+  } catch (error) {
+    console.warn("[Store] Could not load auth:", error);
+  }
 }
 
 function saveThemeToStorage() {
@@ -43,6 +61,18 @@ function saveThemeToStorage() {
     saveTheme(state.theme);
   } catch (error) {
     console.warn("[Store] Could not save theme:", error);
+  }
+}
+
+function saveAuthToStorage() {
+  try {
+    if (state.token) {
+      window.localStorage.setItem(STORAGE_TOKEN, JSON.stringify({ token: state.token, user: state.user }));
+    } else {
+      window.localStorage.removeItem(STORAGE_TOKEN);
+    }
+  } catch (error) {
+    console.warn("[Store] Could not save auth:", error);
   }
 }
 
@@ -104,6 +134,10 @@ function setState(updates) {
     saveMessages();
   }
 
+  if ("token" in updates || "user" in updates || "subscription" in updates) {
+    saveAuthToStorage();
+  }
+
   if (
     "characterId" in updates &&
     nextCharacterId &&
@@ -154,6 +188,62 @@ function clearHistory(characterId) {
   }
 }
 
+function login(token, user) {
+  setState({
+    token,
+    user,
+    subscription: null,
+    authLoaded: false,
+  });
+}
+
+function logout() {
+  setState({
+    token: null,
+    user: null,
+    subscription: null,
+    authLoaded: true,
+  });
+}
+
+function setSubscription(subscription) {
+  setState({ subscription });
+}
+
+function setAuthLoaded(loaded) {
+  setState({ authLoaded: loaded });
+}
+
+async function fetchAuthStatus() {
+  if (!state.token) {
+    setAuthLoaded(true);
+    return;
+  }
+
+  try {
+    const response = await fetch("/api/auth/me", {
+      headers: {
+        Authorization: `Bearer ${state.token}`,
+      },
+    });
+
+    if (!response.ok) {
+      logout();
+      return;
+    }
+
+    const data = await response.json();
+    setState({
+      user: data.user,
+      subscription: data.subscription,
+      authLoaded: true,
+    });
+  } catch (error) {
+    console.error("[Store] fetchAuthStatus failed:", error);
+    setAuthLoaded(true);
+  }
+}
+
 loadFromStorage();
 
 export const store = {
@@ -164,4 +254,9 @@ export const store = {
   resetDaily,
   incrementDaily,
   clearHistory,
+  login,
+  logout,
+  setSubscription,
+  fetchAuthStatus,
+  setAuthLoaded,
 };

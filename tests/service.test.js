@@ -105,4 +105,18 @@ describe("service.sendMessage", () => {
 
     await expect(sendMessage("dracula", [])).rejects.toThrow();
   });
+
+  it("should show daily limit modal on 402 daily_limit_reached", async () => {
+    global.fetch.mockResolvedValue({
+      ok: false,
+      json: async () => ({ error: "Daily limit reached" }),
+    });
+
+    document.body.innerHTML = `<div id="daily-limit-modal" hidden></div>`;
+
+    await expect(sendMessage("dracula", [])).rejects.toThrow("Daily limit reached");
+
+    const modal = document.getElementById("daily-limit-modal");
+    expect(modal.hidden).toBe(false);
+  });
 });

@@ -1,16 +1,36 @@
+# Dependencies
 node_modules/
+
+# Build outputs
+dist/
+.vite/
+coverage/
+
+# Environment files
 .env
 .env.local
 .env.*.local
-dist/
+
+# Vercel
 .vercel/
-.vite/
-coverage/
-*.log
+.vercel
+
+# OS / editor artifacts
 .DS_Store
 Thumbs.db
+*.log
+
+# Local database
+sqlite.db
+
+# Local AI / tooling configs (not part of core source)
 .kilo/
-.vscode/
 .kilocode/
+.clinerules/
+.vscode/
+AGENTS.md
+prompt-cline-inicial.txt
+prompt-copilot-inicial.txt
+
+# Screenshots / media artifacts
 public/screenshots/
-.vercel

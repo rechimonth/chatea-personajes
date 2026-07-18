@@ -1,5 +1,6 @@
 import { CHARACTERS } from "./characters.js";
 import { store } from "./store.js";
+import { getMemories, saveMemory, updateMemory, deleteMemory } from "./service.js";
 
 const listeners = new Set();
 
@@ -22,6 +23,7 @@ function tagsHTML(tags = []) {
 function cardHTML(character) {
   const gradient = `linear-gradient(135deg, ${character.primaryColor}, ${character.secondaryColor})`;
   const assetPrefix = getAssetPrefix();
+  const premiumBadge = character.priceTier === 'premium' ? `<span class="card-premium-badge">Premium</span>` : '';
 
   return `
     <article class="character-card" style="--primary: ${character.primaryColor}; --secondary: ${character.secondaryColor}">
@@ -32,6 +34,7 @@ function cardHTML(character) {
         <div class="card-title-row">
           <h2>${escapeHTML(character.name)}</h2>
           <span class="card-tier">${escapeHTML(character.tier)}</span>
+          ${premiumBadge}
         </div>
         <span class="card-category">${escapeHTML(character.category)}</span>
         <p class="card-description">${escapeHTML(character.description)}</p>
@@ -542,6 +545,10 @@ getApp().innerHTML = `
           <h1 class="chat-character-name">${escapeHTML(character.name)}</h1>
           <span class="chat-character-meta">${escapeHTML(character.category)} · ${escapeHTML(character.tier)}</span>
         </div>
+        <button class="memory-toggle-btn" id="memory-toggle-btn" aria-label="Lo que este personaje recuerda de mi">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 6v6l4 2"/></svg>
+          <span>Lo que recuerda de mí</span>
+        </button>
       </div>
 
       <div class="chat-description">
@@ -725,9 +732,306 @@ body: JSON.stringify({
       }
     });
   }
+
+  const memoryToggleBtn = document.getElementById("memory-toggle-btn");
+  if (memoryToggleBtn) {
+    memoryToggleBtn.addEventListener("click", () => {
+      openMemoryPanel(characterId, character);
+    });
+  }
 }
 
-export { renderChat, renderAbout, renderNotFound };
+function renderMemoryPanelContent(characterId, character, container, memories) {
+  const list = Array.isArray(memories) ? memories : [];
+
+  container.innerHTML = `
+    <div class="memory-panel-header">
+      <h2>Lo que ${escapeHTML(character.name)} recuerda de ti</h2>
+      <button class="memory-close-btn" id="memory-close-btn" aria-label="Cerrar">&times;</button>
+    </div>
+    <div class="memory-list" id="memory-list">
+      ${list.length === 0
+        ? `<p class="memory-empty">Aún no hay recuerdos. Cuando compartas datos personales en el chat, aparecerán aquí.</p>`
+        : list.map((m) => `
+          <div class="memory-item" data-id="${m.id}">
+            <div class="memory-item-body">
+              <p class="memory-text">${escapeHTML(m.memory)}</p>
+              <span class="memory-category">${escapeHTML(m.category)}</span>
+            </div>
+            <div class="memory-item-actions">
+              <button class="memory-edit-btn" data-id="${m.id}" aria-label="Editar">Editar</button>
+              <button class="memory-delete-btn" data-id="${m.id}" aria-label="Eliminar">Eliminar</button>
+            </div>
+          </div>
+        `).join("")}
+    </div>
+    <form id="memory-add-form" class="memory-add-form">
+      <input type="text" id="memory-add-input" class="memory-add-input" placeholder="Agregar un recuerdo manualmente..." required />
+      <button type="submit" class="memory-add-btn">Agregar</button>
+    </form>
+  `;
+
+  const closeBtn = document.getElementById("memory-close-btn");
+  if (closeBtn) {
+    closeBtn.addEventListener("click", () => {
+      const overlay = document.getElementById("memory-overlay");
+      if (overlay) overlay.remove();
+    });
+  }
+
+  document.querySelectorAll(".memory-delete-btn").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const id = Number(btn.getAttribute("data-id"));
+      if (!id) return;
+      try {
+        await deleteMemory(id);
+        const updated = await getMemories(characterId);
+        renderMemoryPanelContent(characterId, character, container, updated);
+      } catch (err) {
+        console.error("[renderMemoryPanel] delete failed:", err);
+        alert(err.message || "Error al eliminar recuerdo");
+      }
+    });
+  });
+
+  document.querySelectorAll(".memory-edit-btn").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const id = Number(btn.getAttribute("data-id"));
+      const item = btn.closest(".memory-item");
+      const textEl = item?.querySelector(".memory-text");
+      if (!id || !textEl) return;
+
+      const newValue = prompt("Editar recuerdo:", textEl.textContent);
+      if (newValue === null || !newValue.trim()) return;
+
+      try {
+        await updateMemory(id, { memory: newValue.trim() });
+        const updated = await getMemories(characterId);
+        renderMemoryPanelContent(characterId, character, container, updated);
+      } catch (err) {
+        console.error("[renderMemoryPanel] update failed:", err);
+        alert(err.message || "Error al actualizar recuerdo");
+      }
+    });
+  });
+
+  const addForm = document.getElementById("memory-add-form");
+  if (addForm) {
+    addForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const input = document.getElementById("memory-add-input");
+      const value = input?.value.trim();
+      if (!value) return;
+
+      try {
+        await saveMemory(characterId, value);
+        const updated = await getMemories(characterId);
+        renderMemoryPanelContent(characterId, character, container, updated);
+      } catch (err) {
+        console.error("[renderMemoryPanel] add failed:", err);
+        alert(err.message || "Error al agregar recuerdo");
+      }
+    });
+  }
+}
+
+async function openMemoryPanel(characterId, character) {
+  const existing = document.getElementById("memory-overlay");
+  if (existing) existing.remove();
+
+  const overlay = document.createElement("div");
+  overlay.id = "memory-overlay";
+  overlay.className = "memory-overlay";
+  overlay.innerHTML = `
+    <div class="memory-panel" role="dialog" aria-modal="true" aria-label="Recuerdos del personaje">
+      <div class="memory-panel-loading">Cargando recuerdos...</div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) overlay.remove();
+  });
+
+  const panel = overlay.querySelector(".memory-panel");
+
+  try {
+    const memories = await getMemories(characterId);
+    renderMemoryPanelContent(characterId, character, panel, memories);
+  } catch (err) {
+    console.error("[openMemoryPanel] load failed:", err);
+    panel.innerHTML = `<div class="memory-panel-header"><h2>Recuerdos</h2><button class="memory-close-btn" id="memory-close-btn">&times;</button></div><p class="memory-empty">No se pudieron cargar los recuerdos.</p>`;
+    const closeBtn = document.getElementById("memory-close-btn");
+    if (closeBtn) closeBtn.addEventListener("click", () => overlay.remove());
+  }
+}
+
+export { renderChat, renderAbout, renderNotFound, renderLogin, renderRegister, renderSuccess, renderCancel, renderAdmin };
+
+function renderSuccess() {
+  setHomeHeaderVisible(false);
+  const app = getApp();
+  app.innerHTML = `
+    <div class="success-view">
+      <div class="success-card">
+        <h1>Pago exitoso</h1>
+        <p>Gracias por suscribirte a Premium.</p>
+        <p>Ya puedes disfrutar de todos los personajes sin limites.</p>
+        <a href="/" class="back-link" data-link>
+          <span class="back-icon">&lt;</span>
+          Volver al inicio
+        </a>
+      </div>
+    </div>
+  `;
+}
+
+function renderCancel() {
+  setHomeHeaderVisible(false);
+  const app = getApp();
+  app.innerHTML = `
+    <div class="cancel-view">
+      <div class="cancel-card">
+        <h1>Pago cancelado</h1>
+        <p>Tu pago no se completo.</p>
+        <p>Podes intentar nuevamente cuando quieras.</p>
+        <a href="/" class="back-link" data-link>
+          <span class="back-icon">&lt;</span>
+          Volver al inicio
+        </a>
+      </div>
+    </div>
+  `;
+}
+
+function renderLogin(assetRoot = window.ASSET_ROOT || "/img") {
+  setHomeHeaderVisible(false);
+  const app = getApp();
+  const assetPrefix = getAssetPrefix(assetRoot);
+
+  app.innerHTML = `
+    <div class="auth-view">
+      <a href="/" class="back-link" data-link>
+        <span class="back-icon">&lt;</span>
+        Volver
+      </a>
+      <div class="auth-card">
+        <h1>Iniciar sesion</h1>
+        <form id="login-form" class="auth-form" autocomplete="off">
+          <div class="form-group">
+            <label for="login-email">Email</label>
+            <input type="email" id="login-email" class="auth-input" required />
+          </div>
+          <div class="form-group">
+            <label for="login-password">Password</label>
+            <input type="password" id="login-password" class="auth-input" required />
+          </div>
+          <button type="submit" class="auth-submit">Entrar</button>
+        </form>
+        <p class="auth-footer">
+          No tenes cuenta? <a href="/register" data-link>Registrate</a>
+        </p>
+      </div>
+    </div>
+  `;
+
+  const form = document.getElementById("login-form");
+  if (form) {
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = document.getElementById("login-email").value.trim();
+      const password = document.getElementById("login-password").value;
+
+      if (!email || !password) return;
+
+      try {
+        const response = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        });
+
+        if (!response.ok) {
+          const data = await response.json().catch(() => ({}));
+          alert(data.error || "Error al iniciar sesion");
+          return;
+        }
+
+        const data = await response.json();
+        store.login(data.token, data.user);
+        window.router.navigate("/");
+      } catch (error) {
+        console.error("[renderLogin] Error:", error);
+        alert("Error de conexion");
+      }
+    });
+  }
+}
+
+function renderRegister(assetRoot = window.ASSET_ROOT || "/img") {
+  setHomeHeaderVisible(false);
+  const app = getApp();
+  const assetPrefix = getAssetPrefix(assetRoot);
+
+  app.innerHTML = `
+    <div class="auth-view">
+      <a href="/" class="back-link" data-link>
+        <span class="back-icon">&lt;</span>
+        Volver
+      </a>
+      <div class="auth-card">
+        <h1>Crear cuenta</h1>
+        <form id="register-form" class="auth-form" autocomplete="off">
+          <div class="form-group">
+            <label for="register-email">Email</label>
+            <input type="email" id="register-email" class="auth-input" required />
+          </div>
+          <div class="form-group">
+            <label for="register-password">Password</label>
+            <input type="password" id="register-password" class="auth-input" required minlength="6" />
+          </div>
+          <button type="submit" class="auth-submit">Registrarse</button>
+        </form>
+        <p class="auth-footer">
+          Ya tenes cuenta? <a href="/login" data-link>Inicia sesion</a>
+        </p>
+      </div>
+    </div>
+  `;
+
+  const form = document.getElementById("register-form");
+  if (form) {
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = document.getElementById("register-email").value.trim();
+      const password = document.getElementById("register-password").value;
+
+      if (!email || !password) return;
+
+      try {
+        const response = await fetch("/api/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        });
+
+        if (!response.ok) {
+          const data = await response.json().catch(() => ({}));
+          alert(data.error || "Error al registrarse");
+          return;
+        }
+
+        const data = await response.json();
+        store.login(data.token, data.user);
+        window.router.navigate("/");
+      } catch (error) {
+        console.error("[renderRegister] Error:", error);
+        alert("Error de conexion");
+      }
+    });
+  }
+}
 
 function renderNotFound() {
   const app = getApp();
@@ -776,4 +1080,222 @@ function renderAbout() {
       </div>
     </div>
   `;
+}
+
+function renderAdmin() {
+  setHomeHeaderVisible(false);
+  const app = getApp();
+  app.innerHTML = `
+    <div class="admin-view">
+      <div class="admin-header">
+        <h1>Admin - Personajes</h1>
+        <div class="admin-actions">
+          <button id="admin-refresh" class="admin-btn">Actualizar</button>
+          <button id="admin-create" class="admin-btn admin-btn--primary">Nuevo personaje</button>
+        </div>
+      </div>
+      <div id="admin-list" class="admin-list"></div>
+      <div id="admin-form-wrapper" class="admin-form-wrapper"></div>
+    </div>
+  `;
+
+  const listEl = document.getElementById("admin-list");
+  const formWrapper = document.getElementById("admin-form-wrapper");
+  const refreshBtn = document.getElementById("admin-refresh");
+  const createBtn = document.getElementById("admin-create");
+
+  if (!listEl) return;
+
+  async function loadCharacters() {
+    try {
+      const raw = window.localStorage.getItem("chatapp_token");
+      const parsed = raw ? JSON.parse(raw) : {};
+      const token = parsed.token;
+
+      if (!token) {
+        listEl.innerHTML = `<p class="admin-error">Necesitas iniciar sesion para acceder al panel admin.</p>`;
+        return;
+      }
+
+      const response = await fetch("/api/admin/characters", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        if (response.status === 403) {
+          listEl.innerHTML = `<p class="admin-error">No tienes permisos de admin.</p>`;
+          return;
+        }
+        throw new Error("Error al cargar personajes");
+      }
+
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error("Respuesta inválida del servidor");
+      }
+
+      const characters = await response.json();
+      listEl.innerHTML = characters.map((char) => `
+        <div class="admin-card" data-id="${escapeHTML(char.id)}">
+          <div class="admin-card-header">
+            <h3>${escapeHTML(char.name)}</h3>
+            <span class="admin-card-tier">${escapeHTML(char.tier)}</span>
+          </div>
+          <p class="admin-card-category">${escapeHTML(char.category)}</p>
+          <div class="admin-card-actions">
+            <button class="admin-btn admin-btn--small edit-char" data-id="${escapeHTML(char.id)}">Editar</button>
+            <button class="admin-btn admin-btn--small admin-btn--danger delete-char" data-id="${escapeHTML(char.id)}">Eliminar</button>
+          </div>
+        </div>
+      `).join("");
+
+      document.querySelectorAll(".edit-char").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const id = btn.getAttribute("data-id");
+          renderCharacterForm(id);
+        });
+      });
+
+      document.querySelectorAll(".delete-char").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const id = btn.getAttribute("data-id");
+          if (!confirm(`¿Eliminar personaje ${id}?`)) return;
+
+          const response = await fetch(`/api/admin/characters?id=${encodeURIComponent(id)}`, {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (!response.ok) {
+            alert("Error al eliminar");
+            return;
+          }
+
+          loadCharacters();
+        });
+      });
+    } catch (error) {
+      console.error("[renderAdmin] Error:", error);
+      listEl.innerHTML = `<p class="admin-error">${escapeHTML(error.message)}</p>`;
+    }
+  }
+
+  function renderCharacterForm(existingId = null) {
+    if (!formWrapper) return;
+
+    const isEdit = Boolean(existingId);
+    formWrapper.innerHTML = `
+      <div class="admin-form">
+        <h2>${isEdit ? "Editar" : "Nuevo"} personaje</h2>
+        <form id="admin-character-form">
+          <div class="form-group">
+            <label for="char-id">ID</label>
+            <input type="text" id="char-id" value="${escapeHTML(existingId || "")}" ${isEdit ? "readonly" : ""} required />
+          </div>
+          <div class="form-group">
+            <label for="char-name">Nombre</label>
+            <input type="text" id="char-name" required />
+          </div>
+          <div class="form-group">
+            <label for="char-category">Categoría</label>
+            <input type="text" id="char-category" required />
+          </div>
+          <div class="form-group">
+            <label for="char-tier">Tier</label>
+            <input type="text" id="char-tier" required />
+          </div>
+          <div class="form-group">
+            <label for="char-avatar">Avatar</label>
+            <input type="text" id="char-avatar" required />
+          </div>
+          <div class="form-group">
+            <label for="char-primary">Color primario</label>
+            <input type="text" id="char-primary" required />
+          </div>
+          <div class="form-group">
+            <label for="char-secondary">Color secundario</label>
+            <input type="text" id="char-secondary" required />
+          </div>
+          <div class="form-group">
+            <label for="char-description">Descripción</label>
+            <textarea id="char-description" required></textarea>
+          </div>
+          <div class="form-group">
+            <label for="char-greeting">Saludo</label>
+            <textarea id="char-greeting" required></textarea>
+          </div>
+          <div class="form-group">
+            <label for="char-system">System prompt</label>
+            <textarea id="char-system" required></textarea>
+          </div>
+          <div class="form-group">
+            <label for="char-price">Precio</label>
+            <select id="char-price">
+              <option value="free">Free</option>
+              <option value="premium">Premium</option>
+            </select>
+          </div>
+          <button type="submit" class="admin-btn admin-btn--primary">Guardar</button>
+        </form>
+      </div>
+    `;
+
+    const form = document.getElementById("admin-character-form");
+    if (form) {
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const body = {
+          id: document.getElementById("char-id").value.trim(),
+          name: document.getElementById("char-name").value.trim(),
+          category: document.getElementById("char-category").value.trim(),
+          tier: document.getElementById("char-tier").value.trim(),
+          avatar: document.getElementById("char-avatar").value.trim(),
+          primaryColor: document.getElementById("char-primary").value.trim(),
+          secondaryColor: document.getElementById("char-secondary").value.trim(),
+          description: document.getElementById("char-description").value.trim(),
+          greeting: document.getElementById("char-greeting").value.trim(),
+          systemPrompt: document.getElementById("char-system").value.trim(),
+          priceTier: document.getElementById("char-price").value,
+        };
+
+        const method = isEdit ? "PUT" : "POST";
+        const url = isEdit ? `/api/admin/characters?id=${encodeURIComponent(existingId)}` : "/api/admin/characters";
+
+        const raw = window.localStorage.getItem("chatapp_token");
+        const parsed = raw ? JSON.parse(raw) : {};
+        const token = parsed.token;
+
+        const response = await fetch(url, {
+          method,
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(body),
+        });
+
+        if (!response.ok) {
+          alert("Error al guardar");
+          return;
+        }
+
+        formWrapper.innerHTML = "";
+        loadCharacters();
+      });
+    }
+  }
+
+  if (refreshBtn) {
+    refreshBtn.addEventListener("click", loadCharacters);
+  }
+
+  if (createBtn) {
+    createBtn.addEventListener("click", () => renderCharacterForm());
+  }
+
+  loadCharacters();
 }
