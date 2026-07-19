@@ -21,14 +21,14 @@ vi.mock("@google/genai", () => ({
   })),
 }));
 
-vi.mock("../../api/middleware.js", () => ({
+vi.mock("../../lib/middleware.js", () => ({
   authenticate: vi.fn((req, res, next) => {
     req.user = { id: 1, email: "test@example.com" };
     next();
   }),
 }));
 
-vi.mock("../../api/db.js", () => ({
+vi.mock("../../lib/db.js", () => ({
   getDb: vi.fn().mockReturnValue({
     get: vi.fn().mockImplementation((sql, params, callback) => {
       callback(null, null);

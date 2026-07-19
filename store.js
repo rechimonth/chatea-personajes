@@ -221,7 +221,7 @@ async function fetchAuthStatus() {
   }
 
   try {
-    const response = await fetch("/api/auth/me", {
+    const response = await fetch("/api/auth", {
       headers: {
         Authorization: `Bearer ${state.token}`,
       },

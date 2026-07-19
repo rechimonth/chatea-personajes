@@ -1,14 +1,12 @@
 import { vi } from "vitest";
-import registerHandler from "../../api/auth/register/index.js";
-import loginHandler from "../../api/auth/login/index.js";
-import meHandler from "../../api/auth/me/index.js";
+import authHandler from "../../api/auth/index.js";
 
 const mockDb = {
   run: vi.fn(),
   get: vi.fn(),
 };
 
-vi.mock("../../api/db.js", () => ({
+vi.mock("../../lib/db.js", () => ({
   getDb: vi.fn(() => mockDb),
   hashPassword: vi.fn((pwd) => `hashed-${pwd}`),
   comparePassword: vi.fn((a, b) => a === "correct"),
@@ -20,7 +18,7 @@ vi.mock("../../api/db.js", () => ({
   }),
 }));
 
-vi.mock("../../api/middleware.js", () => ({
+vi.mock("../../lib/middleware.js", () => ({
   authenticate: (req, res, next) => {
     req.user = { id: 1, email: "test@example.com" };
     next();
@@ -54,10 +52,10 @@ describe("api/auth/register", () => {
       return this;
     });
 
-    const req = { method: "POST", body: { email: "test@example.com", password: "secret123" } };
+    const req = { method: "POST", body: { email: "test@example.com", password: "secret123", action: "register" } };
     const res = createRes();
 
-    await registerHandler(req, res);
+    await authHandler(req, res);
 
     expect(res.status).toHaveBeenCalledWith(201);
     expect(res.json).toHaveBeenCalledWith({
@@ -67,20 +65,20 @@ describe("api/auth/register", () => {
   });
 
   test("should reject missing email", async () => {
-    const req = { method: "POST", body: { password: "secret123" } };
+    const req = { method: "POST", body: { password: "secret123", action: "register" } };
     const res = createRes();
 
-    await registerHandler(req, res);
+    await authHandler(req, res);
 
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({ error: "email is required" });
   });
 
   test("should reject short password", async () => {
-    const req = { method: "POST", body: { email: "test@example.com", password: "123" } };
+    const req = { method: "POST", body: { email: "test@example.com", password: "123", action: "register" } };
     const res = createRes();
 
-    await registerHandler(req, res);
+    await authHandler(req, res);
 
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({ error: "password must be at least 6 characters" });
@@ -94,10 +92,10 @@ describe("api/auth/register", () => {
       return this;
     });
 
-    const req = { method: "POST", body: { email: "test@example.com", password: "secret123" } };
+    const req = { method: "POST", body: { email: "test@example.com", password: "secret123", action: "register" } };
     const res = createRes();
 
-    await registerHandler(req, res);
+    await authHandler(req, res);
 
     expect(res.status).toHaveBeenCalledWith(409);
     expect(res.json).toHaveBeenCalledWith({ error: "Email already registered" });
@@ -114,7 +112,7 @@ describe("api/auth/login", () => {
     const req = { method: "POST", body: { email: "test@example.com", password: "correct" } };
     const res = createRes();
 
-    await loginHandler(req, res);
+    await authHandler(req, res);
 
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith({
@@ -132,7 +130,7 @@ describe("api/auth/login", () => {
     const req = { method: "POST", body: { email: "test@example.com", password: "wrong" } };
     const res = createRes();
 
-    await loginHandler(req, res);
+    await authHandler(req, res);
 
     expect(res.status).toHaveBeenCalledWith(401);
     expect(res.json).toHaveBeenCalledWith({ error: "Invalid email or password" });
@@ -147,7 +145,7 @@ describe("api/auth/login", () => {
     const req = { method: "POST", body: { email: "test@example.com", password: "correct" } };
     const res = createRes();
 
-    await loginHandler(req, res);
+    await authHandler(req, res);
 
     expect(res.status).toHaveBeenCalledWith(401);
     expect(res.json).toHaveBeenCalledWith({ error: "Invalid email or password" });
@@ -168,7 +166,7 @@ describe("api/auth/me", () => {
     const req = { method: "GET", headers: {}, user: { id: 1 } };
     const res = createRes();
 
-    await meHandler(req, res);
+    await authHandler(req, res);
     await new Promise((resolve) => setTimeout(resolve, 50));
 
     expect(res.status).toHaveBeenCalledWith(200);
@@ -176,5 +174,22 @@ describe("api/auth/me", () => {
       user: { id: 1, email: "test@example.com", provider: "local" },
       subscription: { status: "active", provider: "stripe" },
     });
+  });
+});
+
+describe("api/auth/logout", () => {
+  test("should logout and clear subscriptions", async () => {
+    mockDb.run.mockImplementation(function (sql, params, cb) {
+      cb(null);
+      return this;
+    });
+
+    const req = { method: "POST", body: { action: "logout" }, user: { id: 1 } };
+    const res = createRes();
+
+    await authHandler(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(204);
+    expect(res.end).toHaveBeenCalled();
   });
 });

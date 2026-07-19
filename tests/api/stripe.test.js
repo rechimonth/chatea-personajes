@@ -1,8 +1,8 @@
 import { vi } from "vitest";
-import checkoutHandler from "../../api/checkout/stripe/index.js";
-import portalHandler from "../../api/portal/stripe/index.js";
+import checkoutHandler from "../../api/checkout/index.js";
+import portalHandler from "../../api/portal/index.js";
 
-vi.mock("../../api/stripe.js", () => ({
+vi.mock("../../lib/stripe.js", () => ({
   getStripeClient: vi.fn(() => ({
     checkout: {
       sessions: {
@@ -31,14 +31,14 @@ vi.mock("../../api/stripe.js", () => ({
   getStripeWebhookSecret: vi.fn(() => "whsec_test"),
 }));
 
-vi.mock("../../api/middleware.js", () => ({
+vi.mock("../../lib/middleware.js", () => ({
   authenticate: (req, res, next) => {
     req.user = { id: 1, email: "test@example.com" };
     next();
   },
 }));
 
-vi.mock("../../api/db.js", () => ({
+vi.mock("../../lib/db.js", () => ({
   getDb: vi.fn(() => ({
     get: vi.fn((sql, params, cb) => {
       cb(null, { provider_subscription_id: "sub_123" });
@@ -76,7 +76,7 @@ function createRes() {
 
 describe("api/checkout/stripe", () => {
   test("should create checkout session", async () => {
-    const req = { method: "POST", user: { id: 1, email: "test@example.com" } };
+    const req = { method: "POST", body: { provider: "stripe" }, user: { id: 1, email: "test@example.com" } };
     const res = createRes();
 
     await checkoutHandler(req, res);
@@ -89,7 +89,7 @@ describe("api/checkout/stripe", () => {
   });
 
   test("should reject non-POST", async () => {
-    const req = { method: "GET", user: { id: 1, email: "test@example.com" } };
+    const req = { method: "GET", body: {}, user: { id: 1, email: "test@example.com" } };
     const res = createRes();
 
     await checkoutHandler(req, res);
@@ -101,7 +101,7 @@ describe("api/checkout/stripe", () => {
 
 describe("api/portal/stripe", () => {
   test("should create portal session", async () => {
-    const req = { method: "POST", user: { id: 1, email: "test@example.com" } };
+    const req = { method: "POST", body: { provider: "stripe" }, user: { id: 1, email: "test@example.com" } };
     const res = createRes();
 
     await portalHandler(req, res);
@@ -114,7 +114,7 @@ describe("api/portal/stripe", () => {
   });
 
   test("should reject non-POST", async () => {
-    const req = { method: "GET", user: { id: 1, email: "test@example.com" } };
+    const req = { method: "GET", body: {}, user: { id: 1, email: "test@example.com" } };
     const res = createRes();
 
     await portalHandler(req, res);

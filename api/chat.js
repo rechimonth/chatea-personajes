@@ -1,9 +1,9 @@
 ﻿import { GoogleGenAI } from "@google/genai";
 import { CHARACTERS } from "../characters.js";
-import { getDb } from "./db.js";
-import { authenticate } from "./middleware.js";
-import { getRelevantMemories, saveMemory, extractImportantInformation } from "./memory-engine.js";
-import { getCorsOrigin } from "./cors.js";
+import { getDb } from "../lib/db.js";
+import { authenticate } from "../lib/middleware.js";
+import { getRelevantMemories, saveMemory, extractImportantInformation } from "../lib/memory-engine.js";
+import { getCorsOrigin } from "../lib/cors.js";
 
 const MAX_MEMORIES = 8;
 

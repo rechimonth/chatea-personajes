@@ -11,7 +11,7 @@ import {
   computeImportance,
   detectCategory,
   isExtractable,
-} from "../../api/memory-engine.js";
+} from "../../lib/memory-engine.js";
 
 function createMemoryDb() {
   const db = new sqlite3.Database(":memory:");

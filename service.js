@@ -241,12 +241,13 @@ function showDailyLimitModal() {
 
 export async function startCheckout() {
   try {
-    const response = await fetch("/api/checkout/stripe", {
+    const response = await fetch("/api/checkout", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         ...getAuthHeaders(),
       },
+      body: JSON.stringify({ provider: "stripe" }),
     });
 
     if (!response.ok) {
@@ -263,12 +264,13 @@ export async function startCheckout() {
 
 export async function openCustomerPortal() {
   try {
-    const response = await fetch("/api/portal/stripe", {
+    const response = await fetch("/api/portal", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         ...getAuthHeaders(),
       },
+      body: JSON.stringify({ provider: "stripe" }),
     });
 
     if (!response.ok) {
@@ -285,12 +287,13 @@ export async function openCustomerPortal() {
 
 export async function startCheckoutMP() {
   try {
-    const response = await fetch("/api/checkout/mercadopago", {
+    const response = await fetch("/api/checkout", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         ...getAuthHeaders(),
       },
+      body: JSON.stringify({ provider: "mercadopago" }),
     });
 
     if (!response.ok) {
@@ -307,12 +310,13 @@ export async function startCheckoutMP() {
 
 export async function openCustomerPortalMP() {
   try {
-    const response = await fetch("/api/portal/mercadopago", {
+    const response = await fetch("/api/portal", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         ...getAuthHeaders(),
       },
+      body: JSON.stringify({ provider: "mercadopago" }),
     });
 
     if (!response.ok) {

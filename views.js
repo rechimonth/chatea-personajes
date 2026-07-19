@@ -946,10 +946,10 @@ function renderLogin(assetRoot = window.ASSET_ROOT || "/img") {
       if (!email || !password) return;
 
       try {
-        const response = await fetch("/api/auth/login", {
+        const response = await fetch("/api/auth", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
+          body: JSON.stringify({ email, password, action: "login" }),
         });
 
         if (!response.ok) {
@@ -1010,10 +1010,10 @@ function renderRegister(assetRoot = window.ASSET_ROOT || "/img") {
       if (!email || !password) return;
 
       try {
-        const response = await fetch("/api/auth/register", {
+        const response = await fetch("/api/auth", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
+          body: JSON.stringify({ email, password, action: "register" }),
         });
 
         if (!response.ok) {
@@ -1117,7 +1117,7 @@ function renderAdmin() {
         return;
       }
 
-      const response = await fetch("/api/admin/characters", {
+      const response = await fetch("/api/admin", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -1163,7 +1163,7 @@ function renderAdmin() {
           const id = btn.getAttribute("data-id");
           if (!confirm(`¿Eliminar personaje ${id}?`)) return;
 
-          const response = await fetch(`/api/admin/characters?id=${encodeURIComponent(id)}`, {
+          const response = await fetch(`/api/admin?id=${encodeURIComponent(id)}`, {
             method: "DELETE",
             headers: {
               Authorization: `Bearer ${token}`,
@@ -1263,7 +1263,7 @@ function renderAdmin() {
         };
 
         const method = isEdit ? "PUT" : "POST";
-        const url = isEdit ? `/api/admin/characters?id=${encodeURIComponent(existingId)}` : "/api/admin/characters";
+        const url = isEdit ? `/api/admin?id=${encodeURIComponent(existingId)}` : "/api/admin";
 
         const raw = window.localStorage.getItem("chatapp_token");
         const parsed = raw ? JSON.parse(raw) : {};

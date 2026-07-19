@@ -8,14 +8,14 @@ const mockDb = {
   run: vi.fn(),
 };
 
-vi.mock("../../api/middleware.js", () => ({
+vi.mock("../../lib/middleware.js", () => ({
   authenticate: (req, res, next) => {
     req.user = { id: 1, email: req.headers["x-admin-email"] === ADMIN_EMAIL ? ADMIN_EMAIL : "user@example.com" };
     next();
   },
 }));
 
-vi.mock("../../api/db.js", () => ({
+vi.mock("../../lib/db.js", () => ({
   getDb: vi.fn(() => mockDb),
   hashPassword: vi.fn((pwd) => `hashed-${pwd}`),
   comparePassword: vi.fn((a, b) => a === "correct"),
@@ -51,7 +51,7 @@ describe("api/admin/characters", () => {
 
   beforeAll(async () => {
     vi.resetModules();
-    const mod = await import("../../api/admin/characters/index.js");
+    const mod = await import("../../api/admin/index.js");
     handler = mod.default;
   });
 

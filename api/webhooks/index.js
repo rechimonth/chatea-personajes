@@ -1,6 +1,6 @@
-import { getStripeClient, getStripeWebhookSecret } from "../../stripe.js";
-import { getMPClient } from "../../mercadopago.js";
-import { getDb } from "../../db.js";
+import { getStripeClient, getStripeWebhookSecret } from "../../lib/stripe.js";
+import { getMPClient } from "../../lib/mercadopago.js";
+import { getDb } from "../../lib/db.js";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {

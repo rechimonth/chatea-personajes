@@ -1,6 +1,6 @@
-import { authenticate } from "../middleware.js";
-import { getDb } from "../db.js";
-import { getAllowedOrigins, getCorsOrigin } from "../cors.js";
+import { authenticate } from "../../lib/middleware.js";
+import { getDb } from "../../lib/db.js";
+import { getAllowedOrigins, getCorsOrigin } from "../../lib/cors.js";
 import {
   saveMemory,
   getRelevantMemories,
@@ -9,7 +9,7 @@ import {
   deleteMemory,
   mergeSimilarMemories,
   extractImportantInformation,
-} from "../memory-engine.js";
+} from "../../lib/memory-engine.js";
 
 function getQuery(reqUrl) {
   try {

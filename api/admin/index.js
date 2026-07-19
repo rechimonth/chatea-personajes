@@ -1,8 +1,14 @@
-import { getDb } from "../../db.js";
-import { authenticate } from "../../middleware.js";
+import { getDb } from "../../lib/db.js";
+import { authenticate } from "../../lib/middleware.js";
 
 function getAdminEmail() {
   return (process.env.ADMIN_EMAIL || "").toLowerCase();
+}
+
+function isAdmin(user) {
+  const adminEmail = getAdminEmail();
+  if (!adminEmail) return false;
+  return (user.email || "").toLowerCase() === adminEmail;
 }
 
 function parseRow(row) {
@@ -23,12 +29,6 @@ function parseRow(row) {
     priceTier: row.price_tier,
     isActive: Boolean(row.is_active),
   };
-}
-
-function isAdmin(user) {
-  const adminEmail = getAdminEmail();
-  if (!adminEmail) return false;
-  return (user.email || "").toLowerCase() === adminEmail;
 }
 
 function getAllCharacters(db) {
@@ -219,7 +219,7 @@ export default async function handler(req, res) {
 
       return res.status(405).json({ error: "Method not allowed" });
     } catch (error) {
-      console.error("[api/admin/characters] Unexpected error:", error);
+      console.error("[api/admin] Unexpected error:", error);
       return res.status(500).json({ error: "Internal server error" });
     }
   });

@@ -1,5 +1,5 @@
 import { vi } from "vitest";
-import { getDb, hashPassword, comparePassword, generateToken, verifyToken } from "../../api/db.js";
+import { getDb, hashPassword, comparePassword, generateToken, verifyToken } from "../../lib/db.js";
 
 describe("api/db.js", () => {
   afterEach(() => {
