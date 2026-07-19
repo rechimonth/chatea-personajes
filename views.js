@@ -381,7 +381,7 @@ function renderMessageBubble(message, character, isUser = false) {
   const avatarHTML = isUser
     ? `<div class="bubble-avatar bubble-avatar-user">Tú</div>`
     : `<div class="bubble-avatar" style="background: linear-gradient(135deg, ${character.primaryColor}, ${character.secondaryColor})">
-        <img src="${assetPrefix}/${character.avatar}" alt="${escapeHTML(character.name)}" />
+        <img src="${character.avatar.startsWith('/img') ? character.avatar : `${assetPrefix}/${character.avatar}`}" alt="${escapeHTML(character.name)}" />
        </div>`;
 
   const nameHTML = isUser
@@ -469,7 +469,7 @@ getApp().innerHTML = `
 
       <div class="chat-header">
         <div class="chat-avatar" style="background: ${gradient}">
-          <img src="${assetPrefix}/${character.avatar}" alt="${escapeHTML(character.name)}" />
+          <img src="${character.avatar.startsWith('/img') ? character.avatar : `${assetPrefix}/${character.avatar}`}" alt="${escapeHTML(character.name)}" />
         </div>
         <div class="chat-header-info">
           <h1 class="chat-character-name">${escapeHTML(character.name)}</h1>
