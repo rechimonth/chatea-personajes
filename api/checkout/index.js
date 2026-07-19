@@ -4,6 +4,29 @@ import { getMPClient, getMPPublicKey, getMPPlanId } from "../../lib/mercadopago.
 import { getDb } from "../../lib/db.js";
 
 export default async function handler(req, res) {
+  const reqOrigin = req.headers.origin || "";
+  const allowedOrigins = [
+    "https://chatea-personajes.vercel.app",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+  ];
+  const corsOrigin = allowedOrigins.includes(reqOrigin) ? reqOrigin : null;
+
+  if (corsOrigin) {
+    res.setHeader("Access-Control-Allow-Origin", corsOrigin);
+    res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  }
+
+  if (req.method === "OPTIONS") {
+    if (!corsOrigin) {
+      return res.status(403).json({ error: "Origin not allowed" });
+    }
+    return res.status(204).end();
+  }
+
+  console.error("[api/checkout] method=" + req.method + " origin=" + reqOrigin + " url=" + req.url);
+
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
