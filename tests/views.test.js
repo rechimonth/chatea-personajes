@@ -67,7 +67,7 @@ describe("views", () => {
 
       const app = document.getElementById("app-main");
       expect(app.innerHTML).toContain("banner-container");
-      expect(app.innerHTML).toContain("carousel-viewport");
+      expect(app.innerHTML).toContain("character-grid");
     });
 
     it("should render all characters from CHARACTERS", () => {
@@ -78,14 +78,14 @@ describe("views", () => {
       expect(app.innerHTML).toContain("Drácula");
     });
 
-it("should render character cards with button", () => {
-       renderHome();
+    it("should render character cards with button", () => {
+      renderHome();
 
-       const app = document.getElementById("app-main");
-       expect(app.querySelector(".card-3d")).not.toBeNull();
-       expect(app.querySelectorAll(".btn-chat-3d").length).toBe(2);
-       expect(app.querySelector(".btn-chat-3d").getAttribute("data-id")).toBe("sherlock-holmes");
-     });
+      const app = document.getElementById("app-main");
+      expect(app.querySelector(".character-card")).not.toBeNull();
+      expect(app.querySelectorAll(".btn-chat").length).toBe(2);
+      expect(app.querySelector(".btn-chat").getAttribute("data-id")).toBe("sherlock-holmes");
+    });
   });
 
   describe("renderChat", () => {

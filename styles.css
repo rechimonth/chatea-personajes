@@ -359,7 +359,7 @@ body::before {
   border-color: var(--gold);
 }
 
-.btn-chat-3d {
+.btn-chat {
   width: 100%;
   padding: 12px 24px;
   border: 2px solid var(--wine);
@@ -373,19 +373,126 @@ body::before {
   box-shadow: 0 4px 16px var(--gold-glow);
   transition: var(--transition);
   text-align: center;
+  min-height: 44px;
 }
 
-.btn-chat-3d:hover {
+.btn-chat:hover {
   transform: scale(1.05);
   box-shadow: 0 6px 24px var(--gold-glow);
 }
 
-.carousel-nav {
-  display: none;
+.character-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  padding: 0 16px 32px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-.pagination {
-  display: none;
+.character-card {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-card);
+  transition: var(--transition);
+}
+
+.character-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  border-color: var(--gold);
+}
+
+.card-avatar {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+}
+
+.card-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.card-body {
+  padding: 16px;
+}
+
+.card-title-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.card-title-row h2 {
+  font-size: 1.2rem;
+  font-family: 'Cinzel', serif;
+  color: var(--text-primary);
+}
+
+.card-tier {
+  font-size: 0.8rem;
+  color: var(--gold);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+
+.card-category {
+  display: inline-block;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.card-description {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+.card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.card-footer {
+  padding: 12px 16px 16px;
+}
+
+.btn-chat {
+  width: 100%;
+  padding: 12px 24px;
+  border: 2px solid var(--wine);
+  border-radius: 10px;
+  font-family: 'Cinzel', serif;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  color: #0a0a12;
+  background: linear-gradient(135deg, var(--gold), var(--wine));
+  box-shadow: 0 4px 16px var(--gold-glow);
+  transition: var(--transition);
+  text-align: center;
+  min-height: 44px;
+}
+
+.btn-chat:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 24px var(--gold-glow);
 }
 
 /* ===== MOBILE: max-width 767px ===== */
@@ -442,38 +549,13 @@ body::before {
     background: transparent;
   }
 
-  .carousel-viewport {
-    position: relative;
-    width: 100%;
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    padding: 20px 16px 32px;
-    overflow-x: hidden;
-  }
-
-  .carousel-track {
-    display: grid !important;
+  .character-grid {
     grid-template-columns: 1fr;
-    justify-items: center;
-    align-content: start;
     gap: 24px;
-    padding: 0;
-    width: 100%;
   }
 
-  .card-3d {
-    width: min(92vw, 420px);
-    height: 420px;
-  }
-
-  .carousel-nav {
-    display: none;
-  }
-
-  .pagination {
-    display: none;
+  .card-avatar {
+    aspect-ratio: 3 / 4;
   }
 
   .navbar-inner {
@@ -540,62 +622,10 @@ body::before {
     min-height: calc(100vh - 80px);
   }
 
-  .carousel-viewport {
-    min-height: calc(100vh - 80px);
-    justify-content: flex-start;
-    padding: 0;
-    overflow-x: auto;
-  }
-
-  .carousel-track {
-    display: grid !important;
+  .character-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    justify-items: center;
-    align-content: start;
-    column-gap: 32px;
-    row-gap: 32px;
-    padding: 0 32px;
-    width: 100%;
-    grid-auto-flow: row;
-  }
-
-  .card-3d {
-    width: min(44vw, 420px);
-    height: 420px;
-  }
-
-  .carousel-nav {
-    display: inline-flex;
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 10;
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    background: rgba(18, 18, 30, 0.85);
-    border: 2px solid var(--border-color);
-    color: var(--gold);
-    box-shadow: var(--shadow-card);
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: var(--transition);
-    font-size: 1.2rem;
-    font-weight: bold;
-  }
-
-  .carousel-nav.prev {
-    left: 12px;
-  }
-
-  .carousel-nav.next {
-    right: 12px;
-  }
-
-  .carousel-nav:hover {
-    background: var(--gold);
-    color: #0a0a12;
+    gap: 32px;
+    padding: 0 24px 40px;
   }
 
   .pagination {
@@ -665,72 +695,10 @@ body::before {
     min-height: calc(100vh - 90px);
   }
 
-  .carousel-viewport {
-    min-height: calc(100vh - 90px);
-    justify-content: flex-start;
-    padding: 0;
-    overflow-x: auto;
-  }
-
-  .carousel-track {
-    display: grid !important;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    justify-items: center;
-    align-content: center;
-    column-gap: 40px;
-    row-gap: 40px;
-    padding: 0 48px;
-    width: 100%;
-    grid-auto-flow: row;
-  }
-
-  .card-3d {
-    width: min(28vw, 420px);
-    height: 420px;
-  }
-
-  .carousel-nav {
-    display: inline-flex;
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 10;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background: rgba(18, 18, 30, 0.85);
-    border: 2px solid var(--border-color);
-    color: var(--gold);
-    box-shadow: var(--shadow-card);
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: var(--transition);
-    font-size: 1.4rem;
-    font-weight: bold;
-  }
-
-  .carousel-nav.prev {
-    left: 20px;
-  }
-
-  .carousel-nav.next {
-    right: 20px;
-  }
-
-  .carousel-nav:hover {
-    background: var(--gold);
-    color: #0a0a12;
-  }
-
-  .pagination {
-    display: flex;
-    position: absolute;
-    bottom: 24px;
-    left: 50%;
-    transform: translateX(-50%);
-    gap: 14px;
-    z-index: 10;
+  .character-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 40px;
+    padding: 0 48px 48px;
   }
 }
 

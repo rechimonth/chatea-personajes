@@ -166,7 +166,7 @@ router.addRoute("/404", () => {
 });
 
 function handleChatClick(e) {
-  const button = e.target.closest(".btn-chat-3d");
+  const button = e.target.closest(".btn-chat");
   if (!button) return;
 
   const id = button.getAttribute("data-id");

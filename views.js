@@ -75,120 +75,50 @@ export function renderHome(assetRoot = window.ASSET_ROOT || "/img") {
       <p class="home-subtitle">Explora mundos literarios clásicos y mantén conversaciones naturales con personajes icónicos impulsados por inteligencia artificial</p>
     </div>
     <div class="banner-container">
-      <div class="carousel-viewport">
-        <div class="carousel-track" id="carousel-track">
-          ${CHARACTERS.map((char, index) => {
-            const imageSrc = `${assetPrefix}/${char.avatar}`;
-            return `
-            <div class="card-3d" data-id="${char.id}">
-              <img src="${imageSrc}" alt="${escapeHTML(char.name)}" class="card-image" loading="lazy" />
-              <div class="card-overlay">
-                <div class="card-overlay-content">
-                  <h3 class="card-name">${escapeHTML(char.name)}</h3>
-                  <button class="btn-chat-3d" data-id="${char.id}" aria-label="Chatear con ${escapeHTML(char.name)}">CHATEAR</button>
-                </div>
+      <div class="character-grid" id="character-grid">
+        ${CHARACTERS.map((char) => {
+          const imageSrc = char.avatar.startsWith("/img") ? char.avatar : `${assetPrefix}/${char.avatar}`;
+          return `
+          <article class="character-card" data-id="${char.id}">
+            <div class="card-avatar" style="background: linear-gradient(135deg, ${char.primaryColor}, ${char.secondaryColor})">
+              <img src="${imageSrc}" alt="${escapeHTML(char.name)}" loading="lazy" />
+            </div>
+            <div class="card-body">
+              <div class="card-title-row">
+                <h2>${escapeHTML(char.name)}</h2>
+                <span class="card-tier">${escapeHTML(char.tier)}</span>
+              </div>
+              <span class="card-category">${escapeHTML(char.category)}</span>
+              <p class="card-description">${escapeHTML(char.description)}</p>
+              <div class="card-tags">
+                ${tagsHTML(char.tags)}
               </div>
             </div>
-          `;
-          }).join("")}
-        </div>
-        <button class="carousel-nav prev" id="carousel-prev" aria-label="Anterior">
-          &larr;
-        </button>
-        <button class="carousel-nav next" id="carousel-next" aria-label="Siguiente">
-          &rarr;
-        </button>
-        <div class="pagination" id="pagination">
-          ${CHARACTERS.map((_, i) => `<div class="pagination-dot ${i === 0 ? 'active' : ''}" data-index="${i}"></div>`).join("")}
-        </div>
+            <div class="card-footer">
+              <button class="btn-chat" data-id="${char.id}" aria-label="Chatear con ${escapeHTML(char.name)}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+                Chatear
+              </button>
+            </div>
+          </article>
+        `;
+        }).join("")}
       </div>
     </div>
   `;
 
-  const track = document.getElementById("carousel-track");
-  const viewport = document.querySelector(".carousel-viewport");
-  const cards = document.querySelectorAll(".card-3d");
-  const dots = document.querySelectorAll(".pagination-dot");
-  const prevBtn = document.getElementById("carousel-prev");
-  const nextBtn = document.getElementById("carousel-next");
-  
-  let activeIndex = 0;
+  const grid = document.getElementById("character-grid");
+  const cards = document.querySelectorAll(".character-card");
 
-  function updateCarousel({ smooth = true } = {}) {
-    cards.forEach((card, i) => {
-      card.classList.toggle("active", i === activeIndex);
-    });
-    dots.forEach((dot, i) => {
-      dot.classList.toggle("active", i === activeIndex);
-    });
-    const activeCard = cards[activeIndex];
-    if (activeCard) {
-      let scrolled = false;
-      if (viewport) {
-        try {
-          if (typeof activeCard.scrollIntoView === "function") {
-            activeCard.scrollIntoView({ behavior: smooth ? "smooth" : "auto", inline: "center", block: "nearest" });
-            scrolled = true;
-          }
-        } catch {
-          scrolled = false;
-        }
-
-        if (!scrolled) {
-          const cardRect = activeCard.getBoundingClientRect();
-          const viewportRect = viewport.getBoundingClientRect();
-          const offset = cardRect.left - viewportRect.left - (viewportRect.width - cardRect.width) / 2;
-          viewport.scrollLeft += smooth ? offset : Math.round(offset);
-        }
-      }
+  function initGrid() {
+    if (grid) {
+      grid.scrollLeft = 0;
     }
   }
 
-  function initCarousel() {
-    if (viewport) {
-      viewport.scrollLeft = 0;
-    }
-    window.requestAnimationFrame(() => updateCarousel({ smooth: false }));
-  }
-
-  if (prevBtn) {
-    prevBtn.addEventListener("click", () => {
-      activeIndex = (activeIndex - 1 + CHARACTERS.length) % CHARACTERS.length;
-      updateCarousel();
-    });
-
-    prevBtn.addEventListener("keydown", (e) => {
-      if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
-        e.preventDefault();
-        activeIndex = (activeIndex - 1 + CHARACTERS.length) % CHARACTERS.length;
-        updateCarousel();
-      }
-    });
-  }
-
-  if (nextBtn) {
-    nextBtn.addEventListener("click", () => {
-      activeIndex = (activeIndex + 1) % CHARACTERS.length;
-      updateCarousel();
-    });
-
-    nextBtn.addEventListener("keydown", (e) => {
-      if (e.key === "ArrowRight" || e.key === "ArrowDown") {
-        e.preventDefault();
-        activeIndex = (activeIndex + 1) % CHARACTERS.length;
-        updateCarousel();
-      }
-    });
-  }
-
-  dots.forEach((dot) => {
-    dot.addEventListener("click", () => {
-      activeIndex = parseInt(dot.dataset.index);
-      updateCarousel();
-    });
-  });
-
-  initCarousel();
+  initGrid();
 
   /* Search functionality */
   const searchForm = document.querySelector('.search-form');
@@ -326,7 +256,7 @@ export function renderHome(assetRoot = window.ASSET_ROOT || "/img") {
   }
 
   function clearCardFilter() {
-    const cards = document.querySelectorAll('.card-3d');
+    const cards = document.querySelectorAll('.character-card');
     cards.forEach((card) => {
       card.style.display = '';
     });
@@ -336,7 +266,7 @@ export function renderHome(assetRoot = window.ASSET_ROOT || "/img") {
 
   function filterCardsByQuery(queryRaw) {
     const query = normalizeText(queryRaw);
-    const cards = document.querySelectorAll('.card-3d');
+    const cards = document.querySelectorAll('.character-card');
     if (!query) return clearCardFilter();
 
     let visibleCount = 0;
@@ -358,8 +288,8 @@ export function renderHome(assetRoot = window.ASSET_ROOT || "/img") {
       const noResults = document.createElement('div');
       noResults.className = 'no-results';
       noResults.textContent = 'No se encontraron personajes.';
-      const track = document.getElementById('carousel-track');
-      if (track) track.insertAdjacentElement('afterend', noResults);
+      const grid = document.getElementById('character-grid');
+      if (grid) grid.insertAdjacentElement('afterend', noResults);
     }
   }
 
@@ -423,7 +353,7 @@ export function renderHome(assetRoot = window.ASSET_ROOT || "/img") {
   }
 
 
-  document.querySelectorAll(".btn-chat-3d").forEach((btn) => {
+  document.querySelectorAll(".btn-chat").forEach((btn) => {
     btn.addEventListener("click", (e) => {
       const id = e.target.dataset.id;
       if (id) {
